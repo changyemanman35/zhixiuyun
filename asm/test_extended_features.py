@@ -515,6 +515,103 @@ class TestExtendedFeatures(unittest.TestCase):
         db.session.delete(wo)
         db.session.commit()
 
+    def test_checkin_code_anti_cheat_and_customer_rating_closure(self):
+        """测试不可伪造核销码防跑单到场存证、钱包解冻与客户1~5星完工评价闭环"""
+        # 1. 模拟客户发单，平台前置托管上门费
+        with self.client.session_transaction() as sess:
+            sess['user_id'] = 9997
+            sess['role'] = 'customer'
+        res_order = self.client.post('/orders/new', data={
+            'category': '热水器',
+            'new_device_model': '万家乐恒温燃气热水器',
+            'description': '[点火报错E1] 开启热水阀风机运转但无法点火',
+            'contact_name': '陈先生',
+            'contact_phone': '13799998888',
+            'service_address': '海淀区知春路48号院',
+            'selected_tech_id': 'broadcast'
+        }, follow_redirects=True)
+        self.assertEqual(res_order.status_code, 200)
+
+        wo = WorkOrder.query.filter_by(description='[点火报错E1] 开启热水阀风机运转但无法点火').first()
+        self.assertIsNotNone(wo)
+        self.assertIsNotNone(wo.checkin_code)
+        self.assertEqual(len(wo.checkin_code), 6)
+
+        # 2. 技师接单
+        tech = Technician.query.filter_by(active=True).first()
+        self.assertIsNotNone(tech)
+        initial_balance = tech.balance or 0.0
+
+        with self.client.session_transaction() as sess:
+            sess['role'] = 'technician'
+            sess['current_tech_id'] = tech.id
+        res_grab = self.client.post(f'/tech/{wo.id}/grab', follow_redirects=True)
+        self.assertEqual(res_grab.status_code, 200)
+
+        # 3. 客户在详情页查看滴滴式到达雷达与防跑单核销卡片
+        with self.client.session_transaction() as sess:
+            sess['user_id'] = 9997
+            sess['role'] = 'customer'
+            sess['customer_id'] = wo.customer_id
+        res_detail = self.client.get(f'/orders/{wo.id}')
+        self.assertEqual(res_detail.status_code, 200)
+        html_detail = res_detail.data.decode('utf-8')
+        self.assertIn('智修云调度雷达定位中', html_detail)
+        self.assertIn('不可伪造到场证明', html_detail)
+        self.assertIn(wo.checkin_code, html_detail)
+
+        # 4. 师傅上门防作弊校验：输入错误核销码必须被拦截
+        with self.client.session_transaction() as sess:
+            sess['role'] = 'technician'
+            sess['current_tech_id'] = tech.id
+        res_wrong_code = self.client.post(f'/tech/{wo.id}/checkin', data={'checkin_code': '000000'}, follow_redirects=True)
+        self.assertEqual(res_wrong_code.status_code, 200)
+        self.assertIn('核销码错误', res_wrong_code.data.decode('utf-8'))
+        
+        # 5. 师傅输入正确 6 位核销码 -> 到场核销打卡成功，出工费解冻至钱包
+        res_correct_code = self.client.post(f'/tech/{wo.id}/checkin', data={'checkin_code': wo.checkin_code}, follow_redirects=True)
+        self.assertEqual(res_correct_code.status_code, 200)
+        self.assertIn('现场核销成功', res_correct_code.data.decode('utf-8'))
+
+        db.session.refresh(wo)
+        db.session.refresh(tech)
+        self.assertIsNotNone(wo.checkin_at)
+        self.assertEqual(wo.status, 'IN_PROGRESS')
+        self.assertEqual(wo.pay_status, 'SETTLED')
+        self.assertEqual(tech.balance, initial_balance + 25.0)
+
+        # 6. 师傅现场检修完成，提交完工 -> 流转为 WAIT_CONFIRM
+        res_finish = self.client.post(f'/tech/{wo.id}/offline-finish', data={
+            'result_type': 'fixed',
+            'note': '清理燃气喷嘴积碳，更换微动开关，测试出水温度正常'
+        }, follow_redirects=True)
+        self.assertEqual(res_finish.status_code, 200)
+
+        db.session.refresh(wo)
+        self.assertEqual(wo.status, 'WAIT_CONFIRM')
+
+        # 7. 客户给师傅打 5 星好评并确认完结 -> 工单 CLOSED
+        with self.client.session_transaction() as sess:
+            sess['user_id'] = 9997
+            sess['role'] = 'customer'
+            sess['customer_id'] = wo.customer_id
+        res_rate = self.client.post(f'/orders/{wo.id}/rate', data={
+            'rating': '5',
+            'rating_tags': '准时守约,专业熟练,无乱收费',
+            'rating_comment': '师傅上门速度极快，20分钟就解决了打不着火的问题！'
+        }, follow_redirects=True)
+        self.assertEqual(res_rate.status_code, 200)
+
+        db.session.refresh(wo)
+        self.assertEqual(wo.status, 'CLOSED')
+        self.assertEqual(wo.rating, 5)
+        self.assertIn('准时守约', wo.rating_tags)
+        self.assertIsNotNone(wo.rated_at)
+
+        # 清理测试数据
+        db.session.delete(wo)
+        db.session.commit()
+
 
 
 

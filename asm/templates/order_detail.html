@@ -19,7 +19,69 @@
         </div>
     </div>
 
-    <!-- 3.0 C2C 核心：现场到场核销码与资金安全托管卡片 -->
+    <!-- 1. 滴滴式师傅履约赶往动态雷达 (ASSIGNED / IN_PROGRESS 阶段) -->
+    {% if order.status in ['ASSIGNED', 'IN_PROGRESS'] and order.technician %}
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1.5px solid #38bdf8; border-radius: 14px; padding: 22px 26px; margin-bottom: 20px; color: #ffffff; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #0284c7, #38bdf8); display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);">
+                    🛠️
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 18px; font-weight: 800; color: #ffffff;">{{ order.technician.name }}</span>
+                        <span style="font-size: 12px; background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.5); color: #38bdf8; padding: 1px 8px; border-radius: 10px;">
+                            {{ order.technician.cert_title or '持证高级技工' }}
+                        </span>
+                        <span style="font-size: 12px; color: #fbbf24;">★ 4.9 ({{ order.technician.years_of_exp or 5 }}年工龄)</span>
+                    </div>
+                    <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">
+                        📞 联络电话：<a href="tel:{{ order.technician.phone }}" style="color: #38bdf8; font-weight: 600; text-decoration: underline;">{{ order.technician.phone }}</a>
+                        （师傅已接单，正全速赶往您的地址）
+                    </div>
+                </div>
+            </div>
+
+            <!-- 动态雷达走秒标签 -->
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 10px; padding: 8px 16px; text-align: right;">
+                <div style="font-size: 11px; color: #6ee7b7; font-weight: 600;">⚡ 智修云调度雷达定位中</div>
+                <div style="font-size: 15px; font-weight: 800; color: #34d399; margin-top: 2px;" id="liveArrivalBadge">
+                    距您约 1.2 km · 预计 15 分钟内到达
+                </div>
+            </div>
+        </div>
+
+        <!-- 6位核销码核心框 (防跑单关键存证) -->
+        <div style="background: rgba(255, 255, 255, 0.06); border: 1.5px dashed rgba(56, 189, 248, 0.4); border-radius: 12px; padding: 16px 20px; margin-top: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">🔑</span>
+                    <span style="font-size: 15px; font-weight: 800; color: #38bdf8;">您的现场核销打卡码 (不可伪造到场证明)</span>
+                    <span style="font-size: 11px; background: {% if order.checkin_at %}#10b981{% else %}#ea580c{% endif %}; color: #ffffff; padding: 1px 8px; border-radius: 10px;">
+                        {% if order.checkin_at %}✓ 师傅已现场打卡核销{% else %}待师傅到场当面出示{% endif %}
+                    </span>
+                </div>
+                <div style="font-size: 12px; color: #cbd5e1; margin-top: 5px; line-height: 1.5;">
+                    🛡️ <strong>防跑单与安全保障</strong>：上门排查费 ¥30 已由平台托管。师傅敲门到场后，请<strong>当面向其出示此码</strong>供其在手机打卡。核销成功即打下不可抵赖的履约存证，有效杜绝私下抵赖与跑单纠纷！
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: #ffffff; border: 2px solid #38bdf8; border-radius: 10px; padding: 6px 18px; font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #0284c7; font-family: monospace;">
+                    {{ order.checkin_code or '888888' }}
+                </div>
+                <button type="button" class="btn btn-default btn-sm" onclick="navigator.clipboard.writeText('{{ order.checkin_code or '888888' }}'); Toast.show('已复制', '核销码已复制到剪贴板', 'success');">
+                    复制
+                </button>
+            </div>
+        </div>
+
+        <div style="margin-top: 12px; font-size: 12px; color: #94a3b8;">
+            🤝 <strong>线下议价原则</strong>：如需更换配件或深度维修，费用由您与师傅现场面对面自愿商定；若对方案不满意可放弃维修，平台不强制推销任何配件。
+        </div>
+    </div>
+    {% elif not order.checkin_at %}
+    <!-- 原始核销码卡片 (PENDING 阶段广播中) -->
     <div style="background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%); border: 2px solid #52c41a; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(82,196,26,0.12);">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div>
@@ -27,7 +89,7 @@
                     <span style="font-size: 20px;">🔑</span>
                     <span style="font-size: 15px; font-weight: 700; color: #237804;">现场到场核销码 (师傅上门打卡专用)</span>
                     <span style="font-size: 12px; background: #52c41a; color: #ffffff; padding: 1px 8px; border-radius: 10px;">
-                        {% if order.checkin_at %}✓ 师傅已于 {{ order.checkin_at.strftime('%H:%M') }} 现场核销打卡{% else %}待师傅到场出示核销{% endif %}
+                        待师傅接单到场
                     </span>
                 </div>
                 <div style="font-size: 12px; color: #595959; margin-top: 6px;">
@@ -43,11 +105,82 @@
                 </button>
             </div>
         </div>
-
-        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed #d9d9d9; font-size: 12px; color: #389e0d; line-height: 1.6;">
-            <strong>🤝 线下现场自愿议价指引</strong>：具体机器如何修理、是否更换配件及深度人工费，<strong>完全由您与工程师在现场面对面透明协商</strong>。若您对现场报价不满意，有权放弃维修，无需额外支付任何手工费！
-        </div>
     </div>
+    {% endif %}
+
+    <!-- 2. 客户完工打分与评价卡片 (WAIT_CONFIRM 或 CLOSED 未评价) -->
+    {% if order.status in ['WAIT_CONFIRM', 'CLOSED'] and not order.rating %}
+    <div class="card" style="border: 2px solid #f59e0b; background: #fffbeb; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.15);">
+        <div class="card-header" style="color: #b45309; font-size: 16px; font-weight: 800; display: flex; justify-content: space-between; align-items: center;">
+            <span>⭐ 师傅已完成现场服务 · 请为本次履约打分</span>
+            <span style="font-size: 12px; background: #fef3c7; color: #b45309; padding: 2px 10px; border-radius: 12px; border: 1px solid #fde68a;">
+                评价后工单自动完结
+            </span>
+        </div>
+        <form action="/orders/{{ order.id }}/rate" method="post" style="padding: 6px 0;">
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 13px; font-weight: 700; color: #92400e; display: block; margin-bottom: 6px;">
+                    综合服务星级打分：
+                </label>
+                <div style="display: flex; gap: 8px; font-size: 28px; cursor: pointer;" id="starRatingWidget">
+                    <span class="star-item" onclick="setStarRating(1)" style="color:#f59e0b;">★</span>
+                    <span class="star-item" onclick="setStarRating(2)" style="color:#f59e0b;">★</span>
+                    <span class="star-item" onclick="setStarRating(3)" style="color:#f59e0b;">★</span>
+                    <span class="star-item" onclick="setStarRating(4)" style="color:#f59e0b;">★</span>
+                    <span class="star-item" onclick="setStarRating(5)" style="color:#f59e0b;">★</span>
+                    <span id="starRatingText" style="font-size: 14px; font-weight: 700; color: #b45309; margin-left: 10px; line-height: 38px;">5 星极佳好评</span>
+                </div>
+                <input type="hidden" name="rating" id="ratingInput" value="5" />
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 13px; font-weight: 700; color: #92400e; display: block; margin-bottom: 6px;">
+                    服务印象标签 (可多选)：
+                </label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <label style="background:#ffffff; border:1px solid #fde68a; padding:4px 10px; border-radius:14px; font-size:12px; cursor:pointer;">
+                        <input type="checkbox" name="tag_opt" value="准时守约" checked onchange="updateRatingTags()"> 准时守约
+                    </label>
+                    <label style="background:#ffffff; border:1px solid #fde68a; padding:4px 10px; border-radius:14px; font-size:12px; cursor:pointer;">
+                        <input type="checkbox" name="tag_opt" value="专业熟练" checked onchange="updateRatingTags()"> 专业熟练
+                    </label>
+                    <label style="background:#ffffff; border:1px solid #fde68a; padding:4px 10px; border-radius:14px; font-size:12px; cursor:pointer;">
+                        <input type="checkbox" name="tag_opt" value="态度礼貌" checked onchange="updateRatingTags()"> 态度礼貌
+                    </label>
+                    <label style="background:#ffffff; border:1px solid #fde68a; padding:4px 10px; border-radius:14px; font-size:12px; cursor:pointer;">
+                        <input type="checkbox" name="tag_opt" value="无乱收费" checked onchange="updateRatingTags()"> 无乱收费
+                    </label>
+                </div>
+                <input type="hidden" name="rating_tags" id="ratingTagsInput" value="准时守约,专业熟练,态度礼貌,无乱收费" />
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" name="rating_comment" placeholder="说说您对师傅的评价与建议（选填）" 
+                       style="flex: 1; height: 38px; border: 1px solid #fde68a; border-radius: 8px; padding: 0 12px; font-size: 13px; background: #ffffff;" />
+                <button type="submit" class="btn btn-warning" style="background: #f59e0b; border: none; font-weight: 700; height: 38px; padding: 0 20px; white-space: nowrap; color: #ffffff;">
+                    ⭐ 提交打分并确认完工
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+      function setStarRating(num) {
+        document.getElementById('ratingInput').value = num;
+        const stars = document.querySelectorAll('#starRatingWidget .star-item');
+        stars.forEach((s, idx) => {
+          s.style.color = (idx < num) ? '#f59e0b' : '#d1d5db';
+        });
+        const texts = ['1 星非常不满意', '2 星待改进', '3 星一般', '4 星满意', '5 星极佳好评'];
+        document.getElementById('starRatingText').textContent = texts[num - 1];
+      }
+
+      function updateRatingTags() {
+        const checked = Array.from(document.querySelectorAll('input[name="tag_opt"]:checked')).map(cb => cb.value);
+        document.getElementById('ratingTagsInput').value = checked.join(',');
+      }
+    </script>
+    {% endif %}
 
     <!-- 客户评价展示 (如有) -->
     {% if order.rating %}

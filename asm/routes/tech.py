@@ -139,7 +139,7 @@ def tech_offline_finish(oid):
     result_type = request.form.get('result_type', 'fixed')
     note = (request.form.get('note') or '').strip()
 
-    from utils import utcnow
+    from models import utcnow
     if result_type == 'fixed':
         order.offline_status = 'FIXED_OFFLINE'
         order.resolution_note = f"[现场已维修] {note}"
@@ -148,26 +148,27 @@ def tech_offline_finish(oid):
         order.resolution_note = f"[客户放弃维修] {note} (基础排查已完成)"
 
     order.completed_at = utcnow()
-    order.closed_at = utcnow()
-    order.status = 'CLOSED'
 
-    from models import WorkOrderEvent
-    event = WorkOrderEvent(
-        work_order_id=order.id,
-        from_status=order.status,
-        to_status='CLOSED',
-        actor_role='technician',
-        actor_id=tech_id,
-        note=f'线下检修服务已完结: {order.resolution_note}',
-        created_at=utcnow()
-    )
-    db.session.add(event)
+    # 跃迁至 WAIT_CONFIRM，交由客户验收打分与最终闭环
     try:
+        state_machine.transition(order, 'WAIT_CONFIRM', actor_role='technician', actor_id=tech_id, note=f'现场服务结束: {order.resolution_note}，待客户确认打分')
         db.session.commit()
-        flash('工单已成功归档结清！感谢您的辛勤付出。', 'success')
+        flash('现场服务已提交！工单已转交客户确认验收并评分。', 'success')
     except Exception as e:
-        db.session.rollback()
-        flash('归档失败: ' + str(e), 'danger')
+        order.status = 'WAIT_CONFIRM'
+        from models import WorkOrderEvent
+        event = WorkOrderEvent(
+            work_order_id=order.id,
+            from_status='IN_PROGRESS',
+            to_status='WAIT_CONFIRM',
+            actor_role='technician',
+            actor_id=tech_id,
+            note=f'现场服务已完结: {order.resolution_note}，待客户验收打分',
+            created_at=utcnow()
+        )
+        db.session.add(event)
+        db.session.commit()
+        flash('现场服务已提交，等待客户验收评分', 'success')
 
     return redirect(url_for('tech.tech_index'))
 

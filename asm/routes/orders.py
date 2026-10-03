@@ -284,6 +284,36 @@ def order_detail(oid):
     transitions = state_machine.get_available_transitions(order.status, current_role or 'dispatcher')
     return render_template('order_detail.html', order=order, events=events, technicians=technicians, transitions=transitions)
 
+@orders_bp.route('/orders/<int:oid>/rate', methods=['POST'])
+def rate_order_detail(oid):
+    """客户在工单详情页直接提交 1~5 星满意度打分并闭环关闭工单"""
+    order = WorkOrder.query.get_or_404(oid)
+    rating_val = request.form.get('rating', '5')
+    tags = request.form.get('rating_tags', '').strip()
+    comment = request.form.get('rating_comment', '').strip()
+
+    try:
+        r = max(1, min(5, int(rating_val)))
+        order.rating = r
+        order.rating_tags = tags
+        order.rating_comment = comment
+        order.rated_at = utcnow()
+
+        # 客户评分后，工单闭环跃迁为 CLOSED
+        if order.status == 'WAIT_CONFIRM':
+            state_machine.transition(order, 'CLOSED', actor_role='customer', note=f'客户提交 {r} 星满意度评价并确认完工')
+        elif order.status != 'CLOSED':
+            order.status = 'CLOSED'
+            order.closed_at = utcnow()
+
+        db.session.commit()
+        flash('🎉 评价成功！感谢您对本次上门服务的反馈，上门履约已圆满完结！', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'评价提交失败: {e}', 'danger')
+
+    return redirect(url_for('orders.order_detail', oid=oid))
+
 @orders_bp.route('/orders/<int:oid>/dispatch', methods=['POST'])
 @roles_required('dispatcher')
 def dispatch_order(oid):
