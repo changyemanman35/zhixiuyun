@@ -612,6 +612,62 @@ class TestExtendedFeatures(unittest.TestCase):
         db.session.delete(wo)
         db.session.commit()
 
+    def test_customer_active_order_card_and_tech_earnings_ledger(self):
+        """测试客户端报修中心置顶免跳步核销码卡片与师傅端出工收益流水账单"""
+        # 1. 客户发单并派给技师
+        tech = Technician.query.filter_by(active=True).first()
+        self.assertIsNotNone(tech)
+        with self.client.session_transaction() as sess:
+            sess['user_id'] = 9996
+            sess['role'] = 'customer'
+        res_order = self.client.post('/orders/new', data={
+            'category': '空调',
+            'new_device_model': '格力变频壁挂空调',
+            'description': '[漏水] 内机导水槽堵塞往客厅漏水',
+            'contact_name': '周先生',
+            'contact_phone': '13688887777',
+            'service_address': '朝阳区建国门外大街1号',
+            'selected_tech_id': str(tech.id)
+        }, follow_redirects=True)
+        self.assertEqual(res_order.status_code, 200)
+
+        wo = WorkOrder.query.filter_by(description='[漏水] 内机导水槽堵塞往客厅漏水').first()
+        self.assertIsNotNone(wo)
+        self.assertEqual(wo.status, 'ASSIGNED')
+
+        # 2. 客户访问 /query 验证置顶进行中卡片与直接外露核销码
+        with self.client.session_transaction() as sess:
+            sess['user_id'] = 9996
+            sess['role'] = 'customer'
+            sess['customer_id'] = wo.customer_id
+        res_query = self.client.get('/query')
+        self.assertEqual(res_query.status_code, 200)
+        html_query = res_query.data.decode('utf-8')
+        self.assertIn('当前正在履约中的工单', html_query)
+        self.assertIn('师傅正赶往现场', html_query)
+        self.assertIn('现场到场核销码 (师傅敲门后向其出示)', html_query)
+        self.assertIn(wo.checkin_code, html_query)
+
+        # 3. 师傅到场核销打卡
+        with self.client.session_transaction() as sess:
+            sess['role'] = 'technician'
+            sess['current_tech_id'] = tech.id
+        res_checkin = self.client.post(f'/tech/{wo.id}/checkin', data={'checkin_code': wo.checkin_code}, follow_redirects=True)
+        self.assertEqual(res_checkin.status_code, 200)
+
+        # 4. 师傅查看 /tech 工作台，验证出工流水台账
+        res_tech = self.client.get('/tech')
+        self.assertEqual(res_tech.status_code, 200)
+        html_tech = res_tech.data.decode('utf-8')
+        self.assertIn('出工劳务收益账单流水', html_tech)
+        self.assertIn('+¥25.00', html_tech)
+        self.assertIn('出工费已入钱包', html_tech)
+        self.assertIn(wo.order_no, html_tech)
+
+        # 清理测试数据
+        db.session.delete(wo)
+        db.session.commit()
+
 
 
 

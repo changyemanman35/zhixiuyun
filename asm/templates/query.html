@@ -197,6 +197,71 @@
       </div>
     </div>
 
+    <!-- 正在履约中的置顶卡片 (免跳步直接出示核销码) -->
+    {% if active_order %}
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 2px solid #38bdf8; border-radius: 16px; padding: 22px 24px; margin-bottom: 24px; color: #ffffff; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 22px;">⚡</span>
+            <span style="font-size: 16px; font-weight: 800; color: #38bdf8;">当前正在履约中的工单：{{ active_order.order_no }}</span>
+            <span class="status-badge" style="background: {{ STATUS_COLORS.get(active_order.status, '#38bdf8') }}; border-radius: 6px; padding: 2px 10px; font-size: 12px;">
+              {{ config.STATUS_LABELS_CUSTOMER.get(active_order.status, active_order.status) }}
+            </span>
+          </div>
+          <a href="/orders/{{ active_order.id }}" class="btn btn-sm btn-outline" style="color: #38bdf8; border-color: #38bdf8; border-radius: 8px;">
+            进入全屏详情 ➔
+          </a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; align-items: center;">
+          <div>
+            <div style="font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">
+              🔧 {{ active_order.category or '家用电器' }} · {{ active_order.description }}
+            </div>
+            {% if active_order.technician %}
+              <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">
+                👷 接单师傅：<strong>{{ active_order.technician.name }}</strong> ({{ active_order.technician.cert_title or '持证高级技工' }}) ·
+                📞 <a href="tel:{{ active_order.technician.phone }}" style="color: #38bdf8; text-decoration: underline;">{{ active_order.technician.phone }}</a>
+              </div>
+              <div style="font-size: 12.5px; color: #34d399; font-weight: 600;">
+                ⚡ 师傅正赶往现场 · 距您约 1.2km · 预计 15 分钟内到达
+              </div>
+            {% else %}
+              <div style="font-size: 13px; color: #fbbf24;">
+                📡 全城雷达调度中，正在就近推单给在岗师傅，请稍候...
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- 6位核销码免跳步直达大框 -->
+          <div style="background: rgba(255, 255, 255, 0.08); border: 1.5px dashed rgba(56, 189, 248, 0.5); border-radius: 12px; padding: 12px 16px; text-align: center;">
+            <div style="font-size: 12px; color: #38bdf8; font-weight: 700;">
+              🔑 现场到场核销码 (师傅敲门后向其出示)
+            </div>
+            <div style="font-size: 30px; font-weight: 900; letter-spacing: 6px; color: #ffffff; font-family: monospace; margin: 4px 0;">
+              {{ active_order.checkin_code or '888888' }}
+            </div>
+            <div style="font-size: 11px; color: #94a3b8;">
+              {% if active_order.checkin_at %}
+                ✓ 师傅已于 {{ active_order.checkin_at.strftime('%H:%M') }} 现场核销打卡
+              {% else %}
+                ⚠️ 当面出示即可核销打卡，安全防跑单
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if active_order.status == 'WAIT_CONFIRM' and not active_order.rating %}
+          <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.15); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <span style="font-size: 13px; color: #fbbf24;">⭐ 师傅已完成现场服务，请为师傅打分并确认完结！</span>
+            <a href="/orders/{{ active_order.id }}" class="btn btn-warning btn-sm" style="background: #f59e0b; border: none; font-weight: 700; color: #ffffff; border-radius: 6px;">
+              ⭐ 立即前往评价打分 ➔
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
     <!-- 客户名下工单列表 -->
     {% if my_orders %}
       <div style="margin-bottom: 28px;">

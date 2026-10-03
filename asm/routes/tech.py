@@ -34,13 +34,22 @@ def tech_index():
         WorkOrder.status.in_(['PENDING', 'ASSIGNED'])
     ).order_by(WorkOrder.created_at.desc()).limit(10).all()
 
+    # 查询当前技师已现场核销打卡、结算出工费的账单流水
+    settled_orders = []
+    if tech_id:
+        settled_orders = WorkOrder.query.filter(
+            WorkOrder.technician_id == tech_id,
+            WorkOrder.pay_status == 'SETTLED'
+        ).order_by(WorkOrder.checkin_at.desc()).limit(15).all()
+
     return render_template(
         'tech.html',
         current_tech_id=tech_id,
         current_tech=current_tech,
         techs=techs,
         orders_by_status=orders_by_status,
-        pool_orders=pool_orders
+        pool_orders=pool_orders,
+        settled_orders=settled_orders
     )
 
 @bp.route('/tech/switch', methods=['POST'])

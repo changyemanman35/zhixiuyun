@@ -259,6 +259,62 @@
     </div>
   </div>
 
+  <!-- 1.5 师傅出工收益账单流水台账 (Earnings Breakdown & Feedback) -->
+  <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: #0f172a;">
+        <span>💰</span>
+        <span>出工劳务收益账单流水 (已打卡结算 {{ settled_orders|length }} 笔)</span>
+      </div>
+      <span style="font-size: 12px; color: #10b981; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 10px; border-radius: 12px; font-weight: 700;">
+        每单净得 ¥25.00 · 现场核销秒到账
+      </span>
+    </div>
+
+    {% if not settled_orders %}
+      <div style="text-align: center; padding: 18px 0; color: #94a3b8; font-size: 13.5px;">
+        💡 暂无出工结算记录。接单后到达客户现场，输入客户手机上的 6 位核销码打卡，出工费（¥25.00/单）将自动到账并记入此流水！
+      </div>
+    {% else %}
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        {% for so in settled_orders %}
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 20px;">✅</span>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 14px; font-weight: 800; color: #0284c7;">{{ so.order_no }}</span>
+                  <span style="font-size: 13px; font-weight: 700; color: #1e293b;">
+                    {{ so.category or (so.device.model if so.device else '家电排查') }}
+                  </span>
+                  <span style="font-size: 12px; color: #64748b;">
+                    ({{ so.customer.name }} · {{ so.customer.address }})
+                  </span>
+                </div>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 3px;">
+                  打卡时间：{{ so.checkin_at.strftime('%Y-%m-%d %H:%M') if so.checkin_at else '-' }} · 核销码：<code>{{ so.checkin_code }}</code>
+                  {% if so.rating %}
+                    · <span style="color: #f59e0b; font-weight: 700;">⭐ 客户打分 {{ so.rating }} 星</span>
+                    {% if so.rating_tags %}
+                      <span style="background: #fef3c7; color: #b45309; padding: 1px 6px; border-radius: 6px; font-size: 11px;">{{ so.rating_tags }}</span>
+                    {% endif %}
+                  {% else %}
+                    · <span style="color: #64748b;">(待客户验收评价)</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align: right;">
+              <span style="font-size: 18px; font-weight: 900; color: #10b981;">+¥25.00</span>
+              <div style="font-size: 11px; color: #047857; font-weight: 600;">出工费已入钱包</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
   <!-- 2. 邻里抢单雷达池 (实时出工撮合流) -->
   <div class="radar-panel">
     <div class="radar-header">

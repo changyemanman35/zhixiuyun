@@ -23,15 +23,20 @@ def query_form():
     role = session.get('role')
 
     # 如果是已登录客户，加载名下客户实体与全部历史工单
-    if user_id and role == 'customer':
-        user = User.query.get(user_id)
-        if user and user.related_id:
-            current_cust = Customer.query.get(user.related_id)
-        elif user and user.phone:
-            current_cust = Customer.query.filter_by(phone=user.phone).first()
+    if role == 'customer':
+        if user_id:
+            user = User.query.get(user_id)
+            if user and user.related_id:
+                current_cust = Customer.query.get(user.related_id)
+            elif user and user.phone:
+                current_cust = Customer.query.filter_by(phone=user.phone).first()
+        if not current_cust and session.get('customer_id'):
+            current_cust = Customer.query.get(session.get('customer_id'))
 
         if current_cust:
             my_orders = WorkOrder.query.filter_by(customer_id=current_cust.id).order_by(WorkOrder.created_at.desc()).all()
+
+    active_order = next((o for o in my_orders if o.status in ('PENDING', 'ASSIGNED', 'IN_PROGRESS', 'WAIT_CONFIRM')), None)
 
     if request.method == 'GET':
         order_no = request.args.get('order_no', '')
@@ -53,8 +58,9 @@ def query_form():
                                        show_fee=show_fee,
                                        config=config,
                                        my_orders=my_orders,
+                                       active_order=active_order,
                                        current_cust=current_cust)
-        return render_template('query.html', order_no=order_no, my_orders=my_orders, current_cust=current_cust)
+        return render_template('query.html', order_no=order_no, my_orders=my_orders, active_order=active_order, current_cust=current_cust)
 
     order_no = request.form.get('order_no', '').strip()
     phone = request.form.get('phone', '').strip()
