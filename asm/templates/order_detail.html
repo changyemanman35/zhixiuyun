@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block title %}工单详情 - {{ order.order_no }}{% endblock %}
+{% block content %}
+<div class="container" style="max-width:900px;">
+    <div class="flex-between mb-16">
+        <div>
+            <h1 class="page-title" style="margin-bottom:0;">工单详情: {{ order.order_no }}</h1>
+            {% if order.is_rework_30d %}
+                <span class="badge-pulse" style="margin-top: 4px;">⚡ 30天二次返修</span>
+            {% endif %}
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="/orders/{{ order.id }}/print" target="_blank" class="btn btn-default" style="font-weight: 600;">
+                🖨️ 打印 A4 服务报告单
+            </a>
+            <span class="status-badge" style="background:{{ STATUS_COLORS.get(order.status, '#999') }}; font-size:14px; padding:4px 12px;">
+                {{ STATUS_LABELS.get(order.status, order.status) }}
+            </span>
+        </div>
+    </div>
+
+    <!-- 3.0 C2C 核心：现场到场核销码与资金安全托管卡片 -->
+    <div style="background: linear-gradient(135deg, #f6ffed 0%, #e6f7ff 100%); border: 2px solid #52c41a; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(82,196,26,0.12);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">🔑</span>
+                    <span style="font-size: 15px; font-weight: 700; color: #237804;">现场到场核销码 (师傅上门打卡专用)</span>
+                    <span style="font-size: 12px; background: #52c41a; color: #ffffff; padding: 1px 8px; border-radius: 10px;">
+                        {% if order.checkin_at %}✓ 师傅已于 {{ order.checkin_at.strftime('%H:%M') }} 现场核销打卡{% else %}待师傅到场出示核销{% endif %}
+                    </span>
+                </div>
+                <div style="font-size: 12px; color: #595959; margin-top: 6px;">
+                    🛡️ <strong>平台资金已托管</strong>：您已在线预付上门排查费 <strong>¥30.00</strong>。师傅到场排查时，请向其出示此码以解冻出工劳务款。
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: #ffffff; border: 2px dashed #52c41a; border-radius: 10px; padding: 6px 16px; font-size: 34px; font-weight: 900; letter-spacing: 6px; color: #0958d9; font-family: monospace;">
+                    {{ order.checkin_code or '888888' }}
+                </div>
+                <button type="button" class="btn btn-default btn-sm" onclick="navigator.clipboard.writeText('{{ order.checkin_code or '888888' }}'); Toast.show('已复制', '核销码已复制到剪贴板', 'success');">
+                    复制
+                </button>
+            </div>
+        </div>
+
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed #d9d9d9; font-size: 12px; color: #389e0d; line-height: 1.6;">
+            <strong>🤝 线下现场自愿议价指引</strong>：具体机器如何修理、是否更换配件及深度人工费，<strong>完全由您与工程师在现场面对面透明协商</strong>。若您对现场报价不满意，有权放弃维修，无需额外支付任何手工费！
+        </div>
+    </div>
+
+    <!-- 客户评价展示 (如有) -->
+    {% if order.rating %}
+    <div class="card" style="border-left: 4px solid #fadb14; background: #fffbe6; margin-bottom: 16px;">
+        <div class="card-header" style="color: #d48806; display: flex; justify-content: space-between;">
+            <span>⭐ 客户完工满意度评价反馈</span>
+            <span style="font-size: 12px; color: #8c8c8c;">评价时间: {{ order.rated_at.strftime('%Y-%m-%d %H:%M') if order.rated_at else '' }}</span>
+        </div>
+        <div style="font-size: 20px; color: #faad14; margin-bottom: 6px;">
+            {% for _ in range(order.rating) %}★{% endfor %}
+            <span style="font-size: 14px; font-weight: 700; color: #d48806; margin-left: 8px;">{{ order.rating }} 星好评</span>
+        </div>
+        {% if order.rating_tags %}
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+                {% for tag in order.rating_tags.split(',') %}
+                    <span style="background: #ffffff; border: 1px solid #ffd591; color: #d46b08; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
+                        {{ tag }}
+                    </span>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if order.rating_comment %}
+            <div style="font-size: 13px; color: #595959; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px dashed #ffd591;">
+                "{{ order.rating_comment }}"
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="detail-grid">
+        <!-- 基本信息卡片 -->
+        <div class="card">
+            <div class="card-header">基本信息</div>
+            <div class="detail-row"><span class="label">工单编号:</span><span>{{ order.order_no }}</span></div>
+            <div class="detail-row"><span class="label">客户姓名:</span><span>{{ order.customer.name }} ({{ order.customer.phone }})</span></div>
+            <div class="detail-row"><span class="label">客户地址:</span><span>{{ order.customer.address }}</span></div>
+            <div class="detail-row"><span class="label">预约上门时段:</span><span><strong>{{ order.appointment_date or '随时预约' }} {{ order.appointment_slot or '' }}</strong></span></div>
+            <div class="detail-row"><span class="label">设备型号:</span><span>{{ order.device.model }} (SN: {{ order.device.serial_no or '无' }})</span></div>
+            <div class="detail-row"><span class="label">购买日期:</span><span>{{ order.device.purchase_date.strftime('%Y-%m-%d') }}</span></div>
+            <div class="detail-row">
+                <span class="label">保修判定:</span>
+                <span>
+                    {% if order.warranty_flag %}
+                    <span class="status-badge" style="background:#52c41a;">保内</span>
+                    {% else %}
+                    <span class="status-badge" style="background:#ff4d4f;">保外</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="label">优先级:</span>
+                <span>
+                    {% if order.priority == 'urgent' %}
+                    <span class="badge-urgent">加急</span>
+                    {% else %}
+                    <span>普通</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="detail-row"><span class="label">责任技师:</span><span>{{ order.technician.name if order.technician else '待分配' }}</span></div>
+            <div class="detail-row"><span class="label">报修描述:</span><span>{{ order.description }}</span></div>
+        </div>
+
+        <!-- 费用与时长 -->
+        <div class="card">
+            <div class="card-header">费用与时长指标</div>
+            {% set durations = rules.calc_durations(order) %}
+            <div class="detail-row"><span class="label">响应时长:</span><span>{{ durations.response_duration ~ ' 小时' if durations.response_duration is not none else '进行中' }}</span></div>
+            <div class="detail-row"><span class="label">维修时长:</span><span>{{ durations.repair_duration ~ ' 小时' if durations.repair_duration is not none else '进行中' }}</span></div>
+            <div class="detail-row"><span class="label">确认时长:</span><span>{{ durations.closure_duration ~ ' 小时' if durations.closure_duration is not none else '进行中' }}</span></div>
+            
+            <hr style="margin:12px 0; border:none; border-top:1px solid var(--c-border);">
+            <div class="card-header" style="padding-bottom:4px;">费用明细</div>
+            {% if order.warranty_flag %}
+            <p class="text-success" style="font-weight:600;">保修范围内，全部费用 ¥0.00</p>
+            {% else %}
+            <div class="detail-row"><span class="label">上门费:</span><span>¥{{ "%.2f"|format(order.visit_fee) }}</span></div>
+            <div class="detail-row"><span class="label">工时费:</span><span>¥{{ "%.2f"|format(order.labor_fee) }}</span></div>
+            <div class="detail-row"><span class="label">配件费:</span><span>¥{{ "%.2f"|format(order.part_fee) }}</span></div>
+            <div class="detail-row"><span class="label" style="font-weight:700;">总费用:</span><span style="font-weight:700; color:var(--c-primary); font-size:16px;">¥{{ "%.2f"|format(order.total_fee) }}</span></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 配件消耗明细与旧件追溯 -->
+    {% if order.parts.count() > 0 %}
+    <div class="card">
+        <div class="card-header flex-between">
+            <span>配件消耗明细与旧件回收核销 (spec.md 2.3.0 F5)</span>
+            {% if current_user and current_user.role == 'dispatcher' and not order.old_parts_verified %}
+                <form action="/orders/{{ order.id }}/verify-old-parts" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-primary">✅ 调度员一键核销旧件回库</button>
+                </form>
+            {% elif order.old_parts_verified %}
+                <span style="color: #389e0d; font-size: 12px; font-weight: 600;">✓ 旧件已完成回库核销</span>
+            {% endif %}
+        </div>
+        <table>
+            <tr>
+                <th>配件名称</th>
+                <th>数量</th>
+                <th>快照单价</th>
+                <th>更换旧件条码 (SN)</th>
+                <th>回收状态</th>
+                <th>小计</th>
+            </tr>
+            {% for op in order.parts %}
+            <tr>
+                <td>{{ op.part.name }}</td>
+                <td>{{ op.quantity }}</td>
+                <td>¥{{ "%.2f"|format(op.unit_price) }}</td>
+                <td>
+                    {% if op.old_part_sn %}
+                        <code>{{ op.old_part_sn }}</code>
+                    {% else %}
+                        <span style="color: #8c8c8c;">无条码备件</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if order.old_parts_verified or op.old_part_returned %}
+                        <span style="color: #389e0d; font-weight: 600;">已核销</span>
+                    {% else %}
+                        <span style="color: #faad14;">待核销</span>
+                    {% endif %}
+                </td>
+                <td>¥{{ "%.2f"|format(op.unit_price * op.quantity) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- 现场检修与技师操作区 -->
+    {% if current_user and (current_user.role in ['technician', 'dispatcher']) %}
+        {% if order.status == 'ASSIGNED' %}
+        <div class="card" style="border-left: 4px solid #1677ff; background: #f0f7ff;">
+            <div class="card-header" style="color: #0958d9;">🔑 维修工程师到场核销打卡</div>
+            <form action="/tech/{{ order.id }}/checkin" method="post" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="text" name="checkin_code" required maxlength="6" placeholder="输入客户 6 位核销码" 
+                       style="width: 180px; text-transform: uppercase; font-weight: 700; font-size: 15px; text-align: center; border: 1.5px solid #1677ff; border-radius: 6px; padding: 6px;" />
+                <button type="submit" class="btn btn-primary" style="font-weight: 700;">
+                    ✓ 验证核销打卡 (解冻出工费 ¥25.00)
+                </button>
+                <span class="text-secondary text-sm">向现场客户索取手机上展示的 6 位动态验证码</span>
+            </form>
+        </div>
+        {% elif order.status == 'IN_PROGRESS' %}
+        <div class="card" style="border-left: 4px solid #52c41a; background: #f6ffed;">
+            <div class="card-header" style="color: #237804;">🤝 线下维修完成 / 现场自愿协商结案</div>
+            <form action="/tech/{{ order.id }}/offline-finish" method="post">
+                <div style="margin-bottom: 8px; font-size: 13px;">
+                    <label style="margin-right: 16px; cursor: pointer; font-weight: 600;">
+                        <input type="radio" name="result_type" value="fixed" checked> ✅ 现场已修好并完成线下付款
+                    </label>
+                    <label style="cursor: pointer; font-weight: 600;">
+                        <input type="radio" name="result_type" value="aborted"> ❌ 客户放弃维修 (仅完成基础排查)
+                    </label>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" name="note" placeholder="备注（如：更换电容，线下实收客户¥80）" style="flex: 1; padding: 6px 10px; border: 1px solid #d9d9d9; border-radius: 6px;" />
+                    <button type="submit" class="btn btn-success" style="font-weight: 700; white-space: nowrap;">
+                        确认服务结束归档
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- 调度操作区 -->
+    {% if order.status in ['PENDING', 'ASSIGNED'] %}
+    <div class="card">
+        <div class="card-header">调度管理操作</div>
+        <div class="btn-group" style="gap:12px;">
+            {% if order.status == 'PENDING' %}
+            <form action="/orders/{{ order.id }}/dispatch" method="post" class="flex" style="gap:8px;">
+                <select name="technician_id" required style="width:auto;">
+                    <option value="">-- 选择指派技师 --</option>
+                    {% for t in technicians %}
+                    <option value="{{ t.id }}">{{ t.name }} ({{ t.cert_title or '师傅' }})</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">直接派工</button>
+            </form>
+            <details>
+                <summary class="btn btn-outline">取消工单</summary>
+                <form action="/orders/{{ order.id }}/cancel" method="post" style="margin-top:8px;">
+                    <div class="form-group">
+                        <textarea name="note" required placeholder="请填写取消原因（必填）"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger">确认取消</button>
+                </form>
+            </details>
+            {% elif order.status == 'ASSIGNED' %}
+            <details>
+                <summary class="btn btn-primary">改派技师</summary>
+                <form action="/orders/{{ order.id }}/reassign" method="post" style="margin-top:8px; max-width:400px;">
+                    <div class="form-group">
+                        <label>选择新技师</label>
+                        <select name="technician_id" required>
+                            <option value="">-- 选择新技师 --</option>
+                            {% for t in technicians %}
+                            {% if t.id != order.technician_id %}
+                            <option value="{{ t.id }}">{{ t.name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>改派原因（必填）</label>
+                        <textarea name="note" required placeholder="请说明改派原因"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">提交改派</button>
+                </form>
+            </details>
+            <details>
+                <summary class="btn btn-outline">取消工单</summary>
+                <form action="/orders/{{ order.id }}/cancel" method="post" style="margin-top:8px;">
+                    <div class="form-group">
+                        <textarea name="note" required placeholder="请填写取消原因（必填）"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger">确认取消</button>
+                </form>
+            </details>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 时间线 -->
+    <div class="card">
+        <div class="card-header">流转时间线</div>
+        <div class="timeline">
+            {% for evt in events|reverse %}
+            <div class="timeline-item">
+                <div class="timeline-time">{{ evt.created_at.strftime('%Y-%m-%d %H:%M:%S') }} ({{ evt.actor_role }})</div>
+                <div class="timeline-event">
+                    {% if evt.from_status %}
+                    {{ STATUS_LABELS.get(evt.from_status, evt.from_status) }} → {{ STATUS_LABELS.get(evt.to_status, evt.to_status) }}
+                    {% else %}
+                    创建工单 ({{ STATUS_LABELS.get(evt.to_status, evt.to_status) }})
+                    {% endif %}
+                </div>
+                {% if evt.note %}
+                <div class="timeline-note">备注: {{ evt.note }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

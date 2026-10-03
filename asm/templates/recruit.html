@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+
+{% block title %}师傅加盟入驻计划 ── 做有尊严的邻里维修名师{% endblock %}
+
+{% block content %}
+<!-- Google Font: Inter (CRITICAL) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* 消除浏览器滚动条对 100vw 计算造成的微小偏移 */
+  html, body {
+    overflow-x: hidden;
+  }
+
+  .recruit-page-wrapper {
+    font-family: var(--font-inter);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #000000;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow-x: hidden;
+  }
+
+  /* ══════════════════════════════════════════════
+     LIQUID GLASS CSS (EXACT USER SPEC)
+     ══════════════════════════════════════════════ */
+  .liquid-glass {
+    background: rgba(0, 0, 0, 0.4);
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: none;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .liquid-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.4px;
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 20%,
+      rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+      rgba(255,255,255,0.1) 80%, rgba(255,255,255,0.3) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* ══════════════════════════════════════════════
+     HERO SECTION (左右100%完全撑满，无任何遮罩，删除内部导航)
+     ══════════════════════════════════════════════ */
+  .hero-fullscreen {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 680px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: #000000;
+  }
+
+  /* Full-screen Background Video: 彻底左右撑满视口，无白边、无暗色遮罩 */
+  .hero-fullscreen__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    z-index: 0;
+  }
+
+  /* Hero Content Area: 沉底呈现，文字与按钮悬浮于高清高楼大厦之上 */
+  .hero-content-bottom {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    padding: 0 32px 56px 32px;
+    box-sizing: border-box;
+    max-width: 1560px;
+    margin: 0 auto;
+  }
+  @media (min-width: 768px) { .hero-content-bottom { padding: 0 64px 64px 64px; } }
+  @media (min-width: 1024px) { .hero-content-bottom { padding: 0 80px 72px 80px; } }
+
+  .hero-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  @media (min-width: 1024px) {
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: flex-end;
+      gap: 32px;
+    }
+  }
+
+  /* Character-by-character Heading */
+  .hero-heading {
+    font-size: clamp(38px, 5.6vw, 76px);
+    font-weight: 400;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.04em;
+    line-height: 1.08;
+    color: #ffffff;
+  }
+
+  .char-span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateX(-18px);
+    transition: opacity 500ms ease-out, transform 500ms ease-out;
+  }
+  .char-span.is-animated {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Fade-in elements */
+  .fade-in-block {
+    opacity: 0;
+    transition-property: opacity;
+    transition-timing-function: ease-out;
+  }
+  .fade-in-block.is-visible {
+    opacity: 1;
+  }
+
+  .hero-sub {
+    font-size: clamp(16px, 1.25vw, 19px);
+    color: #e5e7eb;
+    margin: 0 0 24px 0;
+    max-width: 620px;
+    line-height: 1.6;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+
+  .hero-btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .btn-vex-white {
+    background: #ffffff;
+    color: #000000;
+    padding: 13px 36px;
+    border-radius: 8px;
+    font-size: 15.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
+  .btn-vex-white:hover {
+    background: #f3f4f6;
+    transform: translateY(-2px);
+    color: #000000;
+  }
+
+  .btn-vex-glass {
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    color: #ffffff;
+    padding: 13px 36px;
+    border-radius: 8px;
+    font-size: 15.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-vex-glass:hover {
+    background: #ffffff !important;
+    color: #000000 !important;
+    transform: translateY(-2px);
+  }
+
+  .hero-tag-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    margin-top: 32px;
+  }
+  @media (min-width: 1024px) {
+    .hero-tag-container {
+      justify-content: flex-end;
+      margin-top: 0;
+    }
+  }
+
+  .tag-glass-card {
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    padding: 14px 28px;
+    border-radius: 14px;
+    user-select: none;
+  }
+  .tag-glass-text {
+    font-size: clamp(17px, 1.7vw, 24px);
+    font-weight: 300;
+    color: #ffffff;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+  }
+
+  /* ══════════════════════════════════════════════
+     DOWNSTREAM CONTENT (Light / Dark Harmonized)
+     ══════════════════════════════════════════════ */
+  .recruit-body-content {
+    background: #ffffff;
+    color: #1f2329;
+    padding: 72px 24px 96px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+</style>
+
+<div class="recruit-page-wrapper">
+  <!-- 1. FULL-SCREEN LIQUID-GLASS HERO (左右完全撑满，无多余子导航) -->
+  <section class="hero-fullscreen">
+    <!-- Raw Background Video (No dimming, no overlay, 100% full-bleed) -->
+    <video
+      class="hero-fullscreen__video"
+      src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4"
+      autoplay
+      loop
+      muted
+      playsinline
+    ></video>
+
+    <!-- Bottom Aligned Hero Content (无需冗余导航，直入震撼高楼大厦全景) -->
+    <div class="hero-content-bottom">
+      <div class="hero-grid">
+        <!-- Left Column -->
+        <div>
+          <!-- Character-by-character Heading -->
+          <h1 class="hero-heading" id="animated-hero-title">
+            <!-- Populated via script for precise 30ms character stagger -->
+            Shaping tomorrow<br>with vision and action.
+          </h1>
+
+          <!-- Subheading (800ms delay, 1000ms duration) -->
+          <div class="fade-in-block" id="hero-subheading" style="transition-duration: 1000ms;">
+            <p class="hero-sub">
+              做有尊严的手艺人。告别传统大厂平台 40% 高额抽成与压款，深度维修 0 抽成，每一分汗水都实打实属于自己。
+            </p>
+          </div>
+
+          <!-- Buttons Row (1200ms delay, 1000ms duration) -->
+          <div class="fade-in-block" id="hero-buttons" style="transition-duration: 1000ms;">
+            <div class="hero-btn-row">
+              <a href="/register?role=technician" class="btn-vex-white">
+                立即申请入驻 (Start a Chat)
+              </a>
+              <a href="#compare" class="btn-vex-glass liquid-glass">
+                查阅入驻特权 (Explore Now) &darr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Tag Card (1400ms delay, 1000ms duration) -->
+        <div class="hero-tag-container">
+          <div class="fade-in-block" id="hero-tag-card" style="transition-duration: 1000ms;">
+            <div class="tag-glass-card liquid-glass">
+              <span class="tag-glass-text">
+                0 抽成 · 秒到账 · 匠人尊严
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. DOWNSTREAM DETAILED RECRUITMENT CONTENT -->
+  <div class="recruit-body-content">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      <!-- 平台硬核优势：传统维修平台 vs 家修无忧平台 · 真实对比 -->
+      <div id="compare" style="margin-bottom: 56px;">
+        <div style="text-align: center; margin-bottom: 32px;">
+          <h2 style="font-size: 30px; font-weight: 800; color: #111827; margin: 0 0 10px 0; letter-spacing: -0.02em;">
+            传统维修平台 vs 家修无忧平台 · 真实对比
+          </h2>
+          <p style="font-size: 15px; color: #6b7280; margin: 0;">数据说话，看懂手艺人真正的尊严与收益在哪里</p>
+        </div>
+
+        <div style="overflow-x: auto; background: #ffffff; border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14.5px;">
+            <thead>
+              <tr style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                <th style="padding: 18px 24px; font-weight: 700; color: #111827; width: 22%;">对比维度</th>
+                <th style="padding: 18px 24px; font-weight: 600; color: #6b7280; width: 38%;">传统中介/大厂外包维修平台</th>
+                <th style="padding: 18px 24px; font-weight: 700; color: #0284c7; width: 40%; background: #f0f9ff;">家修无忧邻里快修平台 (推荐)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 18px 24px; font-weight: 600; color: #111827;">💰 平台抽成比例</td>
+                <td style="padding: 18px 24px; color: #ef4444;">抽成 30% ~ 45%，大头被中介抽走</td>
+                <td style="padding: 18px 24px; color: #16a34a; font-weight: 700; background: #fbfdff;">
+                  ✓ 深度维修 0 抽成！全部利润归师傅
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 18px 24px; font-weight: 600; color: #111827;">⏱️ 结算与到账周期</td>
+                <td style="padding: 18px 24px; color: #6b7280;">压款 15~30 天，还可能被扣虚假扣款</td>
+                <td style="padding: 18px 24px; color: #16a34a; font-weight: 700; background: #fbfdff;">
+                  ✓ 现场 6 位核销码打卡，¥25 出工费即时到账
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 18px 24px; font-weight: 600; color: #111827;">📍 派单距离与交通成本</td>
+                <td style="padding: 18px 24px; color: #6b7280;">跨区 15-20 公里派单，路上耗时跑空单</td>
+                <td style="padding: 18px 24px; color: #16a34a; font-weight: 700; background: #fbfdff;">
+                  ✓ 锁定周边 3-5 公里邻里雷达，高密度就近接单
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 18px 24px; font-weight: 600; color: #111827;">⭐ 客户认可与尊重度</td>
+                <td style="padding: 18px 24px; color: #6b7280;">客户常提防平台套路，师傅背黑锅受气</td>
+                <td style="padding: 18px 24px; color: #16a34a; font-weight: 700; background: #fbfdff;">
+                  ✓ 官方高级工证书形象包装，客户认师傅手艺
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 18px 24px; font-weight: 600; color: #111827;">⏰ 工作自由度</td>
+                <td style="padding: 18px 24px; color: #6b7280;">必须全职守候，拒单会扣分罚款</td>
+                <td style="padding: 18px 24px; color: #16a34a; font-weight: 700; background: #fbfdff;">
+                  ✓ 在线开关自主控制，兼职全职均可，多劳多得
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 真实入驻收益测算器 -->
+      <div id="calculator" class="ant-card" style="padding: 36px; border-radius: 20px; border: 1.5px solid #dbeafe; background: #ffffff; margin-bottom: 56px; box-shadow: 0 8px 24px rgba(2,132,199,0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="font-size: 22px; font-weight: 800; color: #111827; margin: 0;">
+              🧮 师傅月度收益实景测算
+            </h3>
+            <div style="font-size: 13.5px; color: #6b7280; margin-top: 4px;">按普通兼职/全职师傅周边出工日均 3~4 单测算</div>
+          </div>
+          <div style="background: #e0f2fe; color: #0284c7; padding: 6px 18px; border-radius: 20px; font-size: 13.5px; font-weight: 700;">
+            平均月度可增收 ¥9,000 ~ ¥15,000+
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="background: #f9fafb; border-radius: 12px; padding: 20px; text-align: center;">
+            <div style="font-size: 13px; color: #4b5563;">每日上门排查劳务费</div>
+            <div style="font-size: 26px; font-weight: 800; color: #111827; margin: 6px 0;">3 单 × ¥25</div>
+            <div style="font-size: 12.5px; color: #16a34a; font-weight: 600;">= ¥75 / 天 (打卡秒到账)</div>
+          </div>
+          <div style="background: #f9fafb; border-radius: 12px; padding: 20px; text-align: center;">
+            <div style="font-size: 13px; color: #4b5563;">现场深度维修工时与配件收益</div>
+            <div style="font-size: 26px; font-weight: 800; color: #0284c7; margin: 6px 0;">2 单 × ¥180</div>
+            <div style="font-size: 12.5px; color: #16a34a; font-weight: 600;">= ¥360 / 天 (平台 0 抽成)</div>
+          </div>
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; text-align: center;">
+            <div style="font-size: 13px; color: #16a34a;">日均实际纯收益</div>
+            <div style="font-size: 32px; font-weight: 900; color: #ea580c; margin: 4px 0;">¥435 / 天</div>
+            <div style="font-size: 12.5px; color: #16a34a; font-weight: 600;">每月出工 24 天 ≈ ¥10,440</div>
+          </div>
+        </div>
+        <div style="font-size: 13px; color: #6b7280; line-height: 1.6; border-top: 1px dashed #e5e7eb; padding-top: 14px;">
+          * 注：以上测算为北京、上海等主要城区活跃师傅的真实工单中位数。由于平台不对线下深度维修抽成，配件费与深度劳务费 100% 留归师傅所有，远高于传统抽成平台。
+        </div>
+      </div>
+
+      <!-- 入驻老师傅真实故事心声 -->
+      <div id="stories" style="margin-bottom: 56px;">
+        <h3 style="font-size: 26px; font-weight: 800; color: #111827; text-align: center; margin-bottom: 28px;">
+          听听老哥们的真实感受
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+          <div style="padding: 28px; border-radius: 16px; border: 1px solid #e5e7eb; background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+              <div style="width: 46px; height: 46px; border-radius: 50%; background: #0284c7; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">
+                张
+              </div>
+              <div>
+                <div style="font-weight: 700; font-size: 15.5px; color: #111827;">张建国 · 制冷与空调高级工</div>
+                <div style="font-size: 12.5px; color: #6b7280;">从业 15 年 · 常驻朝阳区望京</div>
+              </div>
+            </div>
+            <p style="font-size: 14px; color: #4b5563; line-height: 1.8; margin: 0;">
+              “以前在某某大平台上接单，辛辛苦苦爬高楼修完一台中央空调收 400 块，平台直接划走 160，还不给当面结清。在家修无忧就特别舒服，附近小区骑电动车 5 分钟就到，现场 6 位码一核销，出工费立马到账，后面换电容的钱客户直接转我，这才是尊重手艺人的平台！”
+            </p>
+          </div>
+
+          <div style="padding: 28px; border-radius: 16px; border: 1px solid #e5e7eb; background: #ffffff; box-shadow: 0 4px 16px rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+              <div style="width: 46px; height: 46px; border-radius: 50%; background: #16a34a; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">
+                李
+              </div>
+              <div>
+                <div style="font-weight: 700; font-size: 15.5px; color: #111827;">李海 · 综合家电维修技师</div>
+                <div style="font-size: 12.5px; color: #6b7280;">从业 12 年 · 常驻海淀区中关村</div>
+              </div>
+            </div>
+            <p style="font-size: 14px; color: #4b5563; line-height: 1.8; margin: 0;">
+              “客户在平台上下单时，能清楚看到我的特种操作证书和擅长品类。到了客户家里，人家看我是持证老师傅，态度特别好，端茶递水。检测出来是传感器坏了，如实报价客户当场就修，不折腾不套路，每个月比以前多赚小四千块钱！”
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 极简三步入驻流程 -->
+      <div id="steps" style="background: #f9fafb; border-radius: 20px; padding: 40px 32px; border: 1px solid #e5e7eb; text-align: center;">
+        <h3 style="font-size: 24px; font-weight: 800; color: #111827; margin: 0 0 8px 0;">极简 3 步，开启家门口接单增收</h3>
+        <p style="font-size: 14px; color: #6b7280; margin: 0 0 32px 0;">零门槛审核，最快 10 分钟开通接单雷达</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; text-align: left;">
+          <div style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #f0f0f0;">
+            <div style="font-size: 26px; font-weight: 900; color: #0284c7; margin-bottom: 8px;">01</div>
+            <div style="font-weight: 700; font-size: 15.5px; color: #111827;">线上填写档案</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">登记姓名、手机号、常驻商圈及擅长家电类型</div>
+          </div>
+          <div style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #f0f0f0;">
+            <div style="font-size: 26px; font-weight: 900; color: #0284c7; margin-bottom: 8px;">02</div>
+            <div style="font-weight: 700; font-size: 15.5px; color: #111827;">资质实名核验</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">上传职业电工证/特种作业证或从事多年经验声明</div>
+          </div>
+          <div style="background: #ffffff; padding: 24px; border-radius: 12px; border: 1px solid #f0f0f0;">
+            <div style="font-size: 26px; font-weight: 900; color: #16a34a; margin-bottom: 8px;">03</div>
+            <div style="font-weight: 700; font-size: 15.5px; color: #111827;">开启接单雷达</div>
+            <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">打开在线接单开关，周边 3km 新工单极速推送抢单</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 36px;">
+          <a href="/register?role=technician" class="btn btn-primary" style="padding: 12px 48px; font-size: 16px; font-weight: 700; border-radius: 24px;">
+            🚀 立即免费注册加盟师傅
+          </a>
+          <div style="font-size: 12.5px; color: #6b7280; margin-top: 10px;">平台郑重承诺：不收取任何加盟费、押金或入会培训费！</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ══════════════════════════════════════════════
+  // ENTRANCE ANIMATION CONTROLLER (30ms char stagger)
+  // ══════════════════════════════════════════════
+  (function() {
+    var rawText = "Shaping tomorrow\nwith vision and action.";
+    var titleEl = document.getElementById('animated-hero-title');
+    if (!titleEl) return;
+
+    var lines = rawText.split('\n');
+    var charDelay = 30; // ms
+    var initialDelay = 200; // ms
+    titleEl.innerHTML = '';
+
+    var allSpans = [];
+
+    lines.forEach(function(line, lineIndex) {
+      var lineDiv = document.createElement('div');
+      lineDiv.style.display = 'block';
+
+      for (var charIndex = 0; charIndex < line.length; charIndex++) {
+        var char = line[charIndex];
+        var span = document.createElement('span');
+        span.className = 'char-span';
+        span.textContent = char === ' ' ? '\u00A0' : char;
+
+        var delay = (lineIndex * line.length * charDelay) + (charIndex * charDelay);
+        span.style.transitionDelay = delay + 'ms';
+
+        lineDiv.appendChild(span);
+        allSpans.push(span);
+      }
+      titleEl.appendChild(lineDiv);
+    });
+
+    // 1. Initial 200ms trigger for character fly-in
+    setTimeout(function() {
+      allSpans.forEach(function(span) {
+        span.classList.add('is-animated');
+      });
+    }, initialDelay);
+
+    // 2. Subheading trigger (800ms delay)
+    setTimeout(function() {
+      var sub = document.getElementById('hero-subheading');
+      if (sub) sub.classList.add('is-visible');
+    }, 800);
+
+    // 3. Buttons row trigger (1200ms delay)
+    setTimeout(function() {
+      var btns = document.getElementById('hero-buttons');
+      if (btns) btns.classList.add('is-visible');
+    }, 1200);
+
+    // 4. Tag card trigger (1400ms delay)
+    setTimeout(function() {
+      var tag = document.getElementById('hero-tag-card');
+      if (tag) tag.classList.add('is-visible');
+    }, 1400);
+
+    // 5. Smooth scroll for anchor
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+      anchor.addEventListener('click', function(e) {
+        var targetId = this.getAttribute('href');
+        if (targetId && targetId !== '#') {
+          var targetEl = document.querySelector(targetId);
+          if (targetEl) {
+            e.preventDefault();
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      });
+    });
+  })();
+</script>
+{% endblock %}

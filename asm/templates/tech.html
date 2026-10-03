@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+{% block title %}师傅现场工作台 ── 邻里快修金牌技师端{% endblock %}
+
+{% block content %}
+<style>
+  /* ══════════════════════════════════════════════
+     SHADCN DASHBOARD / FIELD SERVICE KANBAN 风格
+     ══════════════════════════════════════════════ */
+  .tech-container {
+    max-width: 1280px;
+    margin: 24px auto 60px;
+    padding: 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* 顶部师傅专业档案与出工钱包看板 (Dark Glass Dashboard) */
+  .tech-hero-banner {
+    background: radial-gradient(circle at 10% 20%, rgba(56, 198, 236, 0.15), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.15), transparent 50%),
+                #0b1329;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px 28px;
+    color: #ffffff;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  .tech-profile-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .tech-avatar-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .tech-avatar-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+  }
+
+  .tech-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tech-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 8px #34d399;
+  }
+
+  .tech-wallet-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    backdrop-filter: blur(8px);
+  }
+
+  /* 邻里雷达抢单流 (Live Dispatch Radar) */
+  .radar-panel {
+    background: #ffffff;
+    border: 1.5px solid #fed7aa;
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 16px rgba(234, 88, 12, 0.05);
+  }
+
+  .radar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .radar-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #9a3412;
+  }
+
+  .radar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .radar-card {
+    background: #fff7ed;
+    border: 1px solid #ffedd5;
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .radar-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.1);
+  }
+
+  /* 任务看板 (3列 Kanban Board) */
+  .kanban-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .kanban-col {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    min-height: 520px;
+  }
+  .kanban-col-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 14px;
+  }
+  .kanban-col-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kanban-count-badge {
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .task-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .task-order-no {
+    font-weight: 700;
+    color: #0284c7;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .task-order-no:hover {
+    text-decoration: underline;
+  }
+
+  /* 6位核销打卡框 (现场验证收出工费) */
+  .checkin-action-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 12px;
+  }
+  .checkin-code-input {
+    width: 110px;
+    height: 36px;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: 15px;
+    text-align: center;
+    border: 1.5px solid #16a34a;
+    border-radius: 8px;
+    outline: none;
+    letter-spacing: 2px;
+  }
+</style>
+
+<div class="tech-container">
+  <!-- 1. 顶部金牌技师仪表盘 (Dark Glass Hero) -->
+  <div class="tech-hero-banner">
+    <div class="tech-profile-row">
+      <div class="tech-avatar-box">
+        <div class="tech-avatar-circle">🛠️</div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: #ffffff;">
+              {{ current_tech.name if current_tech else '金牌维修师' }}
+            </h2>
+            <span style="font-size: 12px; background: rgba(56,198,236,0.15); border: 1px solid rgba(56,198,236,0.4); padding: 2px 10px; border-radius: 12px; color: #38c6ec; font-weight: 600;">
+              {{ current_tech.cert_title or '持证高级维修工' }}
+            </span>
+            <div class="tech-status-badge">
+              <span class="tech-status-dot"></span>
+              接单雷达已就绪
+            </div>
+          </div>
+          <div style="font-size: 13.5px; color: #94a3b8; margin-top: 6px;">
+            📍 常驻商圈：{{ current_tech.service_address or '海淀区知春路' }} · 覆盖半径 {{ current_tech.service_radius_km or 5.0 }} 公里 · 擅长：{{ current_tech.skill_tags or '空调,洗衣机,冰箱' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- 钱包净收益卡片与切换账号 -->
+      <div class="tech-wallet-card">
+        <div>
+          <div style="font-size: 12px; color: #94a3b8; margin-bottom: 2px;">出工打卡累积净收益</div>
+          <div style="font-size: 26px; font-weight: 900; color: #10b981;">
+            ¥{{ "%.2f"|format(current_tech.balance if current_tech else 0.0) }}
+          </div>
+        </div>
+        <form action="/tech/switch" method="post" style="margin: 0; border-left: 1px solid rgba(255,255,255,0.15); padding-left: 18px;">
+          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">切换测试师傅:</label>
+          <select name="tech_id" onchange="this.form.submit()" style="background: #1e293b; color: #ffffff; border: 1px solid #334155; border-radius: 6px; padding: 4px 8px; font-size: 12px; outline: none;">
+            {% for t in techs %}
+              <option value="{{ t.id }}" {% if current_tech_id == t.id %}selected{% endif %}>{{ t.name }} ({{ t.cert_title or '师傅' }})</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 邻里抢单雷达池 (实时出工撮合流) -->
+  <div class="radar-panel">
+    <div class="radar-header">
+      <div class="radar-title">
+        <span style="font-size: 20px;">📡</span>
+        <span>邻里抢单雷达 (周边 {{ current_tech.service_radius_km or 5.0 }}km 待接单客户池)</span>
+      </div>
+      <span style="font-size: 12.5px; color: #c2410c; background: #ffedd5; padding: 3px 12px; border-radius: 12px; font-weight: 600;">
+        ⚡ 极速派单 · 拼手速抢单
+      </span>
+    </div>
+
+    {% if not pool_orders %}
+      <div style="text-align: center; padding: 28px 0; color: #9a3412; font-size: 14px;">
+        🎉 附近暂无待接单的报修需求。客户完成线上预约并预付 ¥30 上门费后，将第一时间通过此雷达推送抢单！
+      </div>
+    {% else %}
+      <div class="radar-grid">
+        {% for po in pool_orders %}
+          <div class="radar-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                <span style="font-size: 12px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                  📍 距您约 1.2km
+                </span>
+                <span style="font-size: 14px; font-weight: 800; color: #ea580c;">
+                  ¥30.00 已托管
+                </span>
+              </div>
+              <div style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
+                🔧 {{ po.category or (po.device.model if po.device else '家用电器') }}
+              </div>
+              <div style="font-size: 13.5px; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                {{ po.description }}
+              </div>
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
+                📅 期望时段：{{ po.appointment_date or '随时上门' }} {{ po.appointment_slot or '' }}
+              </div>
+            </div>
+            <form action="/tech/{{ po.id }}/grab" method="post" style="margin: 0;">
+              <button type="submit" class="btn btn-primary btn-block" style="background: #ea580c; border: none; border-radius: 8px; font-weight: 700; height: 38px;">
+                ⚡ 立即抢单 (预计净收益 ¥25.00)
+              </button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- 3. 现场执行任务看板 (3列 Kanban Board) -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">
+      📋 我正在处理的维修任务看板
+    </h3>
+  </div>
+
+  <div class="kanban-grid">
+    {% set tech_cols = [
+      ('ASSIGNED', '待开工 / 待核销上门', '#0284c7', '🚶'),
+      ('IN_PROGRESS', '现场检修 / 线下自愿协商', '#16a34a', '🔧'),
+      ('ON_HOLD', '等配件 / 挂起待料', '#ea580c', '⏸️')
+    ] %}
+
+    {% for st, label, color, icon in tech_cols %}
+      {% set order_list = orders_by_status.get(st, []) %}
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <div class="kanban-col-title">
+            <span>{{ icon }}</span>
+            <span>{{ label }}</span>
+          </div>
+          <span class="kanban-count-badge">{{ order_list|length }}</span>
+        </div>
+
+        {% if not order_list %}
+          <div style="text-align: center; color: #94a3b8; font-size: 13px; margin: auto 0; padding: 40px 0;">
+            暂无此状态工单
+          </div>
+        {% endif %}
+
+        {% for order in order_list %}
+          <div class="task-card" style="border-left: 4px solid {{ color }};">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <a href="/orders/{{ order.id }}" class="task-order-no">{{ order.order_no }}</a>
+              <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                ¥30 资金已锁定
+              </span>
+            </div>
+
+            <div style="font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">
+              👤 客户：{{ order.customer.name }} ({{ order.customer.phone }})
+            </div>
+            <div style="font-size: 12.5px; color: #64748b; margin-bottom: 8px;">
+              📍 上门地址：{{ order.customer.address }}
+            </div>
+            <div style="background: #f8fafc; border: 1px solid #f1f5f9; padding: 8px 10px; border-radius: 8px; font-size: 13px; color: #334155; margin-bottom: 10px; line-height: 1.5;">
+              <strong>报修问题：</strong>{{ order.description }}
+            </div>
+
+            <!-- 卡片核心流转动作 -->
+            {% if st == 'ASSIGNED' %}
+              <!-- 到场输入 6 位核销码打卡 -->
+              <div class="checkin-action-box">
+                <div style="font-size: 12px; font-weight: 700; color: #15803d; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+                  🔑 现场 6 位核销码打卡 (向客户索取)
+                </div>
+                <form action="/tech/{{ order.id }}/checkin" method="post" style="display: flex; gap: 8px; margin: 0;">
+                  <input type="text" name="checkin_code" required maxlength="6" placeholder="输入6位码" class="checkin-code-input" />
+                  <button type="submit" class="btn btn-sm btn-primary" style="flex: 1; background: #16a34a; border: none; font-weight: 700; border-radius: 8px;">
+                    核销打卡 (收¥25)
+                  </button>
+                </form>
+              </div>
+            {% elif st == 'IN_PROGRESS' %}
+              <!-- 现场深度维修协商与结算 -->
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px; margin-top: 10px;">
+                <div style="font-size: 12px; font-weight: 700; color: #15803d; margin-bottom: 8px;">
+                  🤝 现场维修完成 / 线下自愿结算
+                </div>
+                <form action="/tech/{{ order.id }}/offline-finish" method="post" style="margin: 0;">
+                  <div style="display: flex; gap: 12px; margin-bottom: 8px; font-size: 12.5px;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                      <input type="radio" name="result_type" value="fixed" checked> ✅ 现场已修好并结清
+                    </label>
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                      <input type="radio" name="result_type" value="aborted"> ❌ 客户放弃维修
+                    </label>
+                  </div>
+                  <input type="text" name="note" placeholder="备注（如：更换压缩机电容，线下实收¥80）" style="width: 100%; height: 32px; font-size: 12px; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 8px; box-sizing: border-box;" />
+                  <button type="submit" class="btn btn-sm btn-success btn-block" style="background: #16a34a; border: none; font-weight: 700; border-radius: 6px; height: 34px;">
+                    确认服务完成并归档
+                  </button>
+                </form>
+              </div>
+            {% elif st == 'ON_HOLD' %}
+              <form action="/tech/{{ order.id }}/resume" method="post" style="margin-top: 10px;">
+                <button type="submit" class="btn btn-sm btn-primary btn-block" style="border-radius: 6px; height: 34px;">
+                  配件已备齐，恢复检修
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}售后维修调度看板 (敏捷交互版) - ASM{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 顶栏标题与快捷建单 -->
+    <div class="flex-between mb-16">
+        <div>
+            <h1 class="page-title" style="margin-bottom: 2px;">⚡ 售后维修调度看板</h1>
+            <p class="text-secondary text-sm">支持 HTML5 原生拖拽流转 · 30天二次返修雷达预警 · 算法推荐派工 (spec.md 2.3.0)</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="/reports" class="btn btn-default">📈 查看管理月报</a>
+            <a href="/orders/new" class="btn btn-primary">+ 新建工单</a>
+        </div>
+    </div>
+
+    <!-- 敏捷多维动态过滤胶囊栏 (原生 JS 驱动) -->
+    <div class="kanban-filter-bar">
+        <div class="filter-chip-group">
+            <span class="filter-chip active" data-filter="all">全部在途 ({{ orders|length }})</span>
+            <span class="filter-chip" data-filter="urgent">⚡ 紧急加急单</span>
+            <span class="filter-chip" data-filter="warn">⏱ 超时预警单</span>
+            <span class="filter-chip" data-filter="rework">⚡ 30天二次返修</span>
+            <span class="filter-chip" data-filter="warranty">🛡️ 官方保内单</span>
+        </div>
+        <div style="flex: 1; max-width: 240px; text-align: right;">
+            <input type="text" id="kanban-search-input" class="ant-input" placeholder="输入单号/客户/型号即搜..." style="font-size: 13px;" />
+        </div>
+    </div>
+
+    {% if not orders %}
+    <div class="card empty-state" style="padding: 60px;">
+        <div class="icon" style="font-size: 48px;">📋</div>
+        <h3 style="margin-top: 12px; color: var(--ant-text-heading);">当前系统无在途未结工单</h3>
+        <p class="text-sm mt-8" style="color: var(--ant-text-secondary);">您可以直接新建工单，或前往 <a href="/seed">演示数据中心</a> 一键生成 28 张全状态演示工单。</p>
+    </div>
+    {% else %}
+    <div class="board">
+        {% set cols = [
+            ('PENDING', '待受理'),
+            ('ASSIGNED', '已派工'),
+            ('IN_PROGRESS', '处理中'),
+            ('ON_HOLD', '等配件/已挂起'),
+            ('WAIT_CONFIRM', '待客户验收')
+        ] %}
+        {% for st, label in cols %}
+        <div class="board-col kanban-column" data-status="{{ st }}">
+            <div class="board-col-title" style="background:{{ STATUS_COLORS.get(st, '#1677ff') }}; display: flex; justify-content: space-between; align-items: center;">
+                <span>{{ label }}</span>
+                <span style="background:rgba(255,255,255,0.25); border-radius:10px; padding:1px 8px; font-size:12px; font-weight:700;">{{ groups[st]|length }}</span>
+            </div>
+            <div class="board-col-body" style="min-height: 480px;">
+                {% for order in groups[st] %}
+                <div class="board-card kanban-card {% if order.sla_level == 'danger' %}sla-danger{% elif order.sla_level == 'warn' %}sla-warn{% endif %}"
+                     draggable="true"
+                     data-order-id="{{ order.id }}"
+                     data-status="{{ order.status }}"
+                     data-priority="{{ order.priority }}"
+                     data-sla="{{ order.sla_level }}"
+                     data-rework="{{ 'true' if order.is_rework_30d else 'false' }}"
+                     data-warranty="{{ 'true' if order.warranty_flag else 'false' }}"
+                     style="border-left-color:{{ STATUS_COLORS.get(st, '#1677ff') }}; cursor: grab;"
+                     onclick="window.location.href='/orders/{{ order.id }}'">
+                    
+                    <div class="flex-between">
+                        <span class="wo-no" style="font-weight: 700;">{{ order.order_no }}</span>
+                        <div style="display: flex; gap: 4px;">
+                            {% if order.priority == 'urgent' %}
+                                <span class="badge-urgent">加急</span>
+                            {% endif %}
+                            {% if order.is_rework_30d %}
+                                <span class="badge-pulse" title="该设备30天内曾产生过工单，请优先安排资深技师">⚡ 30天返修</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="wo-meta" style="margin-top: 6px;">{{ order.customer.name }} · {{ order.device.model }}</div>
+
+                    <!-- 智能推荐技师提示 (针对待受理单) -->
+                    {% if st == 'PENDING' and order.recommended_tech %}
+                        <div style="margin-top: 6px; padding: 4px 8px; background: #e6f4ff; border-radius: 4px; font-size: 11px; color: #0958d9;">
+                            ⭐ 推荐: <strong>{{ order.recommended_tech.technician.name }}</strong> ({{ order.recommended_tech.reason }})
+                        </div>
+                    {% elif order.technician %}
+                        <div style="margin-top: 6px; font-size: 11.5px; color: var(--ant-text-secondary);">
+                            👨‍🔧 承修技师: <strong>{{ order.technician.name }}</strong>
+                        </div>
+                    {% endif %}
+
+                    <div class="flex-between mt-8" style="font-size: 12px;">
+                        <span class="wo-time">停留: {{ order.stay_time_str }}</span>
+                        {% if order.warranty_flag %}
+                            <span class="status-badge" style="background:#52c41a; font-size:10px; padding:1px 6px;">保内</span>
+                        {% else %}
+                            <span class="status-badge" style="background:#ff4d4f; font-size:10px; padding:1px 6px;">保外</span>
+                        {% endif %}
+                    </div>
+
+                    {% if order.sla_level in ['warn', 'danger'] %}
+                    <div class="text-danger text-sm mt-8" style="font-weight:600; display: flex; align-items: center; gap: 4px;">
+                        <span>⚠</span> 超时预警 (SLA {{ order.sla_level|upper }})
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 30px 10px; color: var(--ant-text-secondary); font-size: 12px;">
+                    暂无本阶段工单
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof initKanban === 'function') {
+            initKanban();
+        }
+    });
+</script>
+{% endblock %}

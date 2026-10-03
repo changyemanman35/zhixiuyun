@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}报表下钻 - {{ kind_label }}{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="flex-between mb-16">
+        <div>
+            <h1 class="page-title" style="margin-bottom:4px;">报表下钻: {{ kind_label }} ({{ month }})</h1>
+            <span class="text-muted text-sm">共找到 {{ orders|length }} 条记录</span>
+        </div>
+        <a href="/reports?month={{ month }}" class="btn btn-outline">← 返回月报</a>
+    </div>
+
+    <div class="card">
+        <table>
+            <tr>
+                <th>工单号</th>
+                <th>客户</th>
+                <th>设备</th>
+                <th>当前状态</th>
+                <th>响应时长</th>
+                <th>维修时长</th>
+                <th>按时结论</th>
+                <th>保修</th>
+            </tr>
+            {% for o in orders %}
+            <tr>
+                <td><a href="/orders/{{ o.id }}" class="wo-no">{{ o.order_no }}</a></td>
+                <td>{{ o.customer.name }}</td>
+                <td>{{ o.device.model }}</td>
+                <td><span class="status-badge" style="background:{{ STATUS_COLORS.get(o.status, '#999') }}">{{ o.status_cn }}</span></td>
+                <td>{{ (o.resp_duration ~ 'h') if o.resp_duration is not none else '-' }}</td>
+                <td>{{ (o.rep_duration ~ 'h') if o.rep_duration is not none else '-' }}</td>
+                <td>
+                    {% if o.on_time_text == '按时' %}
+                    <span class="text-success" style="font-weight:600;">按时</span>
+                    {% elif o.on_time_text == '超时' %}
+                    <span class="text-danger" style="font-weight:600;">超时</span>
+                    {% else %}
+                    <span class="text-muted">不可判定</span>
+                    {% endif %}
+                </td>
+                <td>{% if o.warranty_flag %}<span class="text-success">保内</span>{% else %}<span class="text-muted">保外</span>{% endif %}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="text-center text-muted" style="padding:20px 0;">该筛选条件下无工单</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}售后维修工单管理系统 (ASM 2.3 旗舰版){% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- 全局 Toast 容器 (NFR-6 原生自研) -->
+    <div id="toast-container"></div>
+
+    <!-- QUANTUM² UNIFIED BLACK PILL NAV (图二 UI 规范) -->
+    <header class="app-header-pill-wrapper">
+        <nav class="quantum-pill-nav">
+            <!-- 品牌标识 -->
+            <a href="/portal" class="quantum-pill-brand" aria-label="Quantum squared">
+                <svg class="quantum-pill-logo" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="#38c6ec" stroke-width="2.5" />
+                    <circle cx="12" cy="12" r="4" fill="#38c6ec" />
+                </svg>
+                <span class="quantum-pill-wordmark">Quantum<sup>2</sup></span>
+            </a>
+
+            <!-- 核心导航链接区 -->
+            <div class="quantum-pill-links">
+                {% set is_hall_page = request.path in ['/portal', '/home', '/safety', '/compliance', '/recruit', '/join-tech', '/ai-assistant'] %}
+                
+                {% if is_hall_page or not (current_user and current_user.is_authenticated) %}
+                    <!-- 公共四大纯净板块 (无杂质) -->
+                    <a href="/portal" class="quantum-pill-link {% if request.path in ['/portal', '/home'] %}active{% endif %}">服务大厅</a>
+                    <a href="/safety" class="quantum-pill-link {% if request.path in ['/safety', '/compliance'] %}active{% endif %}">安全合规</a>
+                    <a href="/recruit" class="quantum-pill-link {% if request.path in ['/recruit', '/join-tech'] %}active{% endif %}">师傅招募</a>
+                    <a href="/ai-assistant" class="quantum-pill-link {% if request.path == '/ai-assistant' %}active{% endif %}">AI智能助手</a>
+                {% else %}
+                    <!-- 登录角色专属工作台导航 (完全剥离公共主界面杂项) -->
+                    <a href="/portal" class="quantum-pill-link" style="color: #38c6ec; font-weight: 700;">🏠 返回大厅</a>
+                    <span class="quantum-pill-divider"></span>
+
+                    {% if current_user.role == 'customer' %}
+                        <!-- 报修客户专属交互 -->
+                        <a href="/ai-assistant" class="quantum-pill-link {% if request.path == '/ai-assistant' %}active{% endif %}">🤖 AI智能助手</a>
+                        <a href="/query" class="quantum-pill-link {% if request.path == '/query' %}active{% endif %}">📋 我的工单</a>
+                        <a href="/customers" class="quantum-pill-link {% if request.path.startswith('/customers') %}active{% endif %}">📱 我的设备</a>
+                    {% elif current_user.role == 'technician' %}
+                        <!-- 维修师傅专属工作台 -->
+                        <a href="/tech" class="quantum-pill-link {% if request.path.startswith('/tech') %}active{% endif %}">⚡ 师傅工作台</a>
+                        <a href="/query" class="quantum-pill-link {% if request.path.startswith('/query') %}active{% endif %}">🔍 工单查询</a>
+                    {% elif current_user.role == 'dispatcher' %}
+                        <!-- 调度员全量管理看板 -->
+                        <a href="/" class="quantum-pill-link {% if request.path == '/' %}active{% endif %}">调度看板</a>
+                        <a href="/customers" class="quantum-pill-link {% if request.path.startswith('/customers') %}active{% endif %}">客户设备</a>
+                        <a href="/parts" class="quantum-pill-link {% if request.path.startswith('/parts') or request.path.startswith('/fault-types') %}active{% endif %}">字典与价目</a>
+                        <a href="/reports" class="quantum-pill-link {% if request.path.startswith('/reports') %}active{% endif %}">管理报表</a>
+                        <a href="/seed" class="quantum-pill-link {% if request.path.startswith('/seed') %}active{% endif %}">演示数据</a>
+                        <a href="/query" class="quantum-pill-link {% if request.path.startswith('/query') %}active{% endif %}">客户查询</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- 右侧用户操作区 (100% 对齐图二：白色高亮药丸 + 退出) -->
+            <div class="quantum-pill-auth">
+                {% if current_user and current_user.is_authenticated %}
+                    {% if current_user.role == 'dispatcher' %}
+                        <a href="/" class="quantum-pill-cta" title="进入调度工作台">{{ current_user.name or current_user.username }} (调度看板)</a>
+                    {% elif current_user.role == 'technician' %}
+                        <a href="/tech" class="quantum-pill-cta" title="进入技师工作台">{{ current_user.name or current_user.username }} (工作台)</a>
+                    {% else %}
+                        <a href="/query" class="quantum-pill-cta" title="查看我的工单进度">{{ current_user.name or current_user.username }} (我的工单)</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="quantum-pill-logout" title="退出当前登录">退出</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="quantum-pill-cta">登录/注册</a>
+                {% endif %}
+                <button class="quantum-pill-burger" type="button" aria-label="展开菜单" onclick="toggleBasePillMenu(this)">
+                    <span></span><span></span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- 移动端抽屉菜单 -->
+        <div class="quantum-pill-drawer" id="basePillDrawer">
+            {% if is_hall_page or not (current_user and current_user.is_authenticated) %}
+                <a href="/portal">服务大厅</a>
+                <a href="/safety">安全合规</a>
+                <a href="/recruit">师傅招募</a>
+                <a href="/ai-assistant">AI智能助手</a>
+            {% else %}
+                <a href="/portal" style="color: #38c6ec; font-weight: 700;">🏠 返回大厅</a>
+                <div style="height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0;"></div>
+                {% if current_user.role == 'customer' %}
+                    <a href="/ai-assistant">🤖 AI智能助手 (在线自主报修)</a>
+                    <a href="/query">📋 我的工单与进度</a>
+                    <a href="/customers">📱 我的设备档案</a>
+                {% elif current_user.role == 'technician' %}
+                    <a href="/tech">⚡ 技师工作台</a>
+                    <a href="/query">🔍 工单查询</a>
+                {% elif current_user.role == 'dispatcher' %}
+                    <a href="/">调度看板</a>
+                    <a href="/customers">客户设备</a>
+                    <a href="/parts">字典与价目</a>
+                    <a href="/reports">管理报表</a>
+                    <a href="/seed">演示数据</a>
+                    <a href="/query">客户查询</a>
+                {% endif %}
+            {% endif %}
+            
+            {% if current_user and current_user.is_authenticated %}
+                <div style="height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0;"></div>
+                <a href="{{ url_for('auth.logout') }}" style="color: #ef4444; text-align: center; font-size: 13.5px; padding: 6px 0; text-decoration: none;">退出登录</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" style="background: #ffffff; color: #000000; text-align: center; font-weight: 700; margin-top: 6px;">登录/注册</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- 隐藏传递 Flash 消息，由 app.js 自动转换为现代 Toast 弹窗呈现 -->
+    <div style="display: none;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message-hidden" data-category="{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    {% set is_immersive_bleed = request.path in ['/portal', '/home', '/home-repair', '/recruit', '/join-tech', '/safety', '/compliance', '/login', '/register'] %}
+    <main class="main-content {% if is_immersive_bleed %}portal-bleed-wrapper{% endif %}">
+        <div class="{% if is_immersive_bleed %}container-full-bleed{% else %}container{% endif %}">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- 永久移除右下角悬浮球与旧抽屉，全面升级为顶栏独立 AI 智能助手 -->
+    <div style="display: none;" aria-hidden="true">
+        <div class="cloud-floating-dock">
+            <div class="ball-ai-purple"></div>
+            <div class="ball-repair-blue"></div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="container footer-content">
+            <p>© 2026 中小企业售后维修工单管理系统 (ASM 2.3 企业旗舰版)</p>
+            <p class="footer-meta">大厂组件库体系 · 纯原生零 CDN 离线架构 (NFR-6) · 三端通用 AI 智能助手</p>
+        </div>
+    </footer>
+
+    <!-- 纯原生离线核心组件库脚本 (NFR-6) -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script>
+        function toggleBasePillMenu(btn) {
+            const drawer = document.getElementById('basePillDrawer');
+            if (drawer) {
+                drawer.classList.toggle('open');
+            }
+        }
+        document.addEventListener('click', function(e) {
+            const drawer = document.getElementById('basePillDrawer');
+            const burger = document.querySelector('.quantum-pill-burger');
+            if (drawer && drawer.classList.contains('open') && !drawer.contains(e.target) && burger && !burger.contains(e.target)) {
+                drawer.classList.remove('open');
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+{% block title %}客户服务中心 ── 工单进度与在线追踪{% endblock %}
+
+{% block content %}
+<style>
+  /* ══════════════════════════════════════════════
+     SHADCN CUSTOMER PORTAL / TIMELINE 风格
+     ══════════════════════════════════════════════ */
+  .portal-container {
+    max-width: 920px;
+    margin: 28px auto 64px;
+    padding: 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* 顶部客户服务中心 Welcome Header */
+  .customer-hub-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  }
+
+  .customer-meta-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .customer-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .customer-title-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 4px 0;
+  }
+  .customer-subtext {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  /* 客户名下工单卡片流 (Ticket Cards) */
+  .ticket-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .ticket-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  /* 现代化快速查询卡片 */
+  .search-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  }
+  .search-form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  @media (min-width: 640px) {
+    .search-form-row { grid-template-columns: 1.2fr 1.2fr auto; align-items: flex-end; }
+  }
+
+  /* 工单详情与时间线看板 (Ticket Detail Track) */
+  .ticket-detail-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 28px;
+    margin-top: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  }
+
+  /* 6位现场核销码醒目保护盒 */
+  .code-security-box {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1.5px dashed #22c55e;
+    border-radius: 14px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+  }
+  .code-display-value {
+    font-size: 36px;
+    font-weight: 900;
+    color: #15803d;
+    letter-spacing: 6px;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    margin: 8px 0;
+    user-select: all;
+  }
+
+  /* 五段式流光进度条 (Progress Track) */
+  .progress-track-container {
+    margin: 28px 0 32px;
+  }
+  .progress-track-bar {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    gap: 8px;
+  }
+  .progress-step-item {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+  .progress-step-pill {
+    padding: 8px 0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #94a3b8;
+    transition: all 0.2s;
+  }
+  .progress-step-item.done .progress-step-pill {
+    background: #e0f2fe;
+    color: #0284c7;
+    font-weight: 700;
+  }
+  .progress-step-item.active .progress-step-pill {
+    background: #0284c7;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  }
+
+  /* 费用清单与审计卡片 */
+  .fee-summary-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 20px 0;
+  }
+</style>
+
+<div class="portal-container">
+  <!-- 1. 客户服务中心 Welcome Header (登录客户专属) -->
+  {% if current_user and current_user.role == 'customer' %}
+    <div class="customer-hub-header">
+      <div class="customer-meta-box">
+        <div class="customer-avatar">👤</div>
+        <div>
+          <h2 class="customer-title-name">我的报修中心</h2>
+          <div class="customer-subtext">
+            客户姓名：<strong>{{ current_cust.name if current_cust else current_user.name }}</strong>
+            <span style="margin: 0 8px;">·</span>
+            脱敏号码：{{ current_cust.phone[:3] ~ '****' ~ current_cust.phone[-4:] if (current_cust and current_cust.phone|length >= 7) else '已加密' }}
+          </div>
+          <div class="customer-subtext" style="margin-top: 2px;">
+            📍 默认地址：{{ current_cust.address if current_cust else '未绑定' }}
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <a href="/orders/new" class="btn btn-primary" style="padding: 10px 22px; font-weight: 700; border-radius: 10px;">
+          🤖 AI智能报修
+        </a>
+        <a href="/customers" class="btn btn-outline" style="padding: 10px 18px; border-radius: 10px;">
+          📱 我的设备
+        </a>
+      </div>
+    </div>
+
+    <!-- 客户名下工单列表 -->
+    {% if my_orders %}
+      <div style="margin-bottom: 28px;">
+        <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin: 0 0 14px 0;">
+          📦 我登记的工单 ({{ my_orders|length }} 张)
+        </h3>
+
+        {% for mo in my_orders %}
+          <div class="ticket-card">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <span style="font-size: 16px; font-weight: 800; color: #0284c7;">{{ mo.order_no }}</span>
+                <span class="status-badge" style="background: {{ STATUS_COLORS.get(mo.status, '#64748b') }}; border-radius: 6px; padding: 2px 10px; font-size: 12px;">
+                  {{ config.STATUS_LABELS_CUSTOMER.get(mo.status, mo.status) }}
+                </span>
+                <span style="font-size: 12px; color: #94a3b8;">
+                  {{ mo.created_at.strftime('%m-%d %H:%M') if mo.created_at else '-' }}
+                </span>
+              </div>
+              <div style="font-size: 14px; font-weight: 600; color: #334155;">
+                🔧 {{ mo.category or (mo.device.model if mo.device else '家用电器') }} · {{ mo.description }}
+              </div>
+            </div>
+            <div>
+              <a href="/query?order_no={{ mo.order_no }}" class="btn btn-outline btn-sm" style="border-radius: 8px; font-weight: 600;">
+                查看流转详情与核销码 &rarr;
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div style="margin-bottom: 24px;">
+      <h1 class="page-title" style="margin: 0 0 8px 0; font-size: 26px;">客户工单查询</h1>
+      <p style="color: #64748b; font-size: 14px; margin: 0;">输入报修工单号与预留手机号，实时查询流转进度与安全核销码</p>
+    </div>
+  {% endif %}
+
+  <!-- 2. 工单快速查询卡片 (支持未登录与精准凭证直查) -->
+  <div class="search-card">
+    <div style="font-size: 16px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+      <span>🔍</span>
+      <span>工单凭证快速查询</span>
+    </div>
+
+    <form action="/query" method="post">
+      <div class="search-form-row">
+        <div>
+          <label style="font-size: 13px; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">报修工单号</label>
+          <input type="text" name="order_no" class="auth-input" style="height: 42px;" placeholder="例：WO-20261001-0001" value="{{ order_no|default('') }}" required>
+        </div>
+        <div>
+          <label style="font-size: 13px; font-weight: 600; color: #334155; display: block; margin-bottom: 6px;">联系手机号</label>
+          <input type="tel" name="phone" class="auth-input" style="height: 42px;" placeholder="报修时预留的 11 位手机号" value="{{ current_cust.phone if current_cust else '' }}" required>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-primary" style="height: 42px; padding: 0 28px; font-weight: 700; border-radius: 10px; width: 100%;">
+            立即查询
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- 查询失败提示 -->
+  {% if error %}
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px 20px; color: #dc2626; margin-bottom: 24px; font-size: 14px;">
+      ⚠️ {{ error }}
+    </div>
+  {% endif %}
+
+  <!-- 3. 工单全生命周期追踪详情 (Ticket Detail Panel) -->
+  {% if order %}
+    <div class="ticket-detail-panel">
+      <!-- 头部：工单号与当前状态徽章 -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <span style="font-size: 13px; color: #64748b;">工单编号：</span>
+          <span style="font-size: 20px; font-weight: 800; color: #0f172a;">{{ order.order_no }}</span>
+        </div>
+        <span class="status-badge" style="background: {{ STATUS_COLORS.get(order.status, '#999') }}; font-size: 13px; padding: 4px 14px; border-radius: 12px; font-weight: 700;">
+          {{ config.STATUS_LABELS_CUSTOMER.get(order.status, order.status) }}
+        </span>
+      </div>
+
+      <!-- 五段式流光进度条 -->
+      {% set progress_steps = ['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'WAIT_CONFIRM', 'CLOSED'] %}
+      {% set progress_labels = ['已受理', '已安排技师', '维修中', '待您确认', '已完成'] %}
+      {% set status_order = {'PENDING':0, 'ASSIGNED':1, 'IN_PROGRESS':2, 'ON_HOLD':2, 'WAIT_CONFIRM':3, 'CLOSED':4, 'CANCELLED':-1} %}
+      {% set current_idx = status_order.get(order.status, 0) %}
+
+      <div class="progress-track-container">
+        <div class="progress-track-bar">
+          {% for i in range(5) %}
+            <div class="progress-step-item {% if i < current_idx %}done{% elif i == current_idx %}active{% endif %}">
+              <div class="progress-step-pill">
+                {% if i < current_idx %}✓ {% endif %}{{ progress_labels[i] }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- 🔑 现场 6 位专属核销码大卡片 (仅当待上门或维修中展示) -->
+      {% if order.checkin_code and order.status in ['PENDING', 'ASSIGNED'] %}
+        <div class="code-security-box">
+          <div style="font-size: 13px; font-weight: 700; color: #166534; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span>🛡️</span> 平台资金托管保护 · 师傅上门核销码
+          </div>
+          <div class="code-display-value">{{ order.checkin_code }}</div>
+          <div style="font-size: 12.5px; color: #15803d; line-height: 1.6;">
+            师傅携证到达现场后，请向其出示此 6 位码完成打卡核验，平台方解锁出工劳务费。<br>
+            <strong>切勿在师傅未到场前透露此码，杜绝线下跳单乱收费！</strong>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- 工单基本信息网格 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 20px 0;">
+        <div style="background: #f8fafc; border-radius: 10px; padding: 12px 16px;">
+          <div style="font-size: 12px; color: #64748b;">报修电器品类</div>
+          <div style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin-top: 2px;">
+            {{ order.category or (order.device.model if order.device else '家用电器') }}
+          </div>
+        </div>
+        <div style="background: #f8fafc; border-radius: 10px; padding: 12px 16px;">
+          <div style="font-size: 12px; color: #64748b;">客户联系电话</div>
+          <div style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin-top: 2px;">
+            {{ masked_phone or (order.customer.phone[:3] ~ '****' ~ order.customer.phone[-4:] if order.customer and order.customer.phone|length >= 7 else '已脱敏保护') }}
+          </div>
+        </div>
+        <div style="background: #f8fafc; border-radius: 10px; padding: 12px 16px;">
+          <div style="font-size: 12px; color: #64748b;">预约上门时段</div>
+          <div style="font-size: 14.5px; font-weight: 700; color: #0f172a; margin-top: 2px;">
+            {{ order.appointment_date or '随时上门' }} {{ order.appointment_slot or '' }}
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #f8fafc; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;">
+        <div style="font-size: 12px; color: #64748b;">报修故障说明</div>
+        <div style="font-size: 14px; color: #1e293b; margin-top: 4px; line-height: 1.6;">
+          {{ order.description }}
+        </div>
+      </div>
+
+      <!-- 费用结算与保修说明卡片 -->
+      <div class="fee-summary-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 14px; font-weight: 700; color: #1e293b;">费用与资金监管：</span>
+          <span style="font-size: 16px; font-weight: 800; color: #0284c7;">
+            {% if order.warranty_flag %}
+              ¥0.00（保修范围内）
+            {% elif order.status in ['WAIT_CONFIRM', 'CLOSED'] %}
+              ¥{{ "%.2f"|format(order.total_fee or 30.0) }}
+            {% else %}
+              待技师完工后结算 (已预付托管 ¥30.00)
+            {% endif %}
+          </span>
+        </div>
+        <div style="font-size: 12px; color: #64748b; margin-top: 6px;">
+          * ¥30 上门排查费由平台全程托管，未到场随时全额退；现场深度维修若涉及更换配件，由双方线下自主议价结清。
+        </div>
+      </div>
+
+      {# 客户操作区：仅 WAIT_CONFIRM 状态呈现确认与返修 #}
+      {% if order.status == 'WAIT_CONFIRM' %}
+        <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 20px; margin-top: 24px;">
+          <h4 style="font-size: 15px; font-weight: 700; color: #15803d; margin: 0 0 12px 0;">
+            ✅ 师傅已提交维修完工，请您验收并确认
+          </h4>
+          <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+            <form action="/query/confirm" method="post" style="margin: 0;">
+              <input type="hidden" name="order_no" value="{{ order.order_no }}">
+              <input type="hidden" name="phone" value="{{ phone }}">
+              <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 700; background: #16a34a; border: none; border-radius: 8px;">
+                ✓ 验收满意，确认完工
+              </button>
+            </form>
+
+            <details style="flex: 1;">
+              <summary class="btn btn-outline" style="padding: 10px 20px; cursor: pointer; border-radius: 8px;">
+                ⚠️ 故障未修好？申请 7 天免费返工
+              </summary>
+              <form action="/query/rework" method="post" style="margin-top: 12px;">
+                <input type="hidden" name="order_no" value="{{ order.order_no }}">
+                <input type="hidden" name="phone" value="{{ phone }}">
+                <textarea name="note" class="auth-input" style="height: 72px; padding: 8px; margin-bottom: 8px;" placeholder="请详细描述故障未排除情况，师傅将在 24 小时内免费二次上门..." required></textarea>
+                <button type="submit" class="btn btn-danger btn-sm" style="border-radius: 6px;">
+                  提交返工申请
+                </button>
+              </form>
+            </details>
+          </div>
+        </div>
+      {% elif order.status == 'CLOSED' %}
+        <div style="text-align: center; color: #16a34a; font-weight: 700; font-size: 14px; padding: 16px 0;">
+          🎉 本工单已顺利归档完工，享受 7 天售后保障监督！
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

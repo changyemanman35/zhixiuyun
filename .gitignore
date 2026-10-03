@@ -1,0 +1,24 @@
+# Node dependencies
+node_modules/
+viktor-oddy/node_modules/
+
+# Python cache & test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+*.sqlite3
+instance/
+
+# Large media files
+*.mp4
+*.mov
+*.avi
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

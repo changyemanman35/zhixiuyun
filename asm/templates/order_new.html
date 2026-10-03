@@ -1,0 +1,899 @@
+{% extends "base.html" %}
+{% block title %}AI智能报修中心 ── 智修云极速派修{% endblock %}
+
+{% block content %}
+<style>
+  /* ══════════════════════════════════════════════════════════════
+     滴滴打车式 AI 智能报修与双向撮合中心
+     ══════════════════════════════════════════════════════════════ */
+  .didi-repair-viewport {
+    max-width: 960px;
+    margin: 24px auto 60px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #0f172a;
+  }
+
+  /* 顶部横幅 */
+  .didi-header-hero {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .didi-pill-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: #e0f2fe;
+    color: #0284c7;
+    font-size: 12.5px;
+    font-weight: 600;
+    border: 1px solid #bae6fd;
+    margin-bottom: 8px;
+  }
+  .didi-main-heading {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    margin: 0 0 6px 0;
+  }
+  .didi-main-heading span {
+    color: #0064c8;
+  }
+  .didi-sub-text {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+  }
+
+  /* AI 自然语言一键填单卡片 */
+  .didi-ai-prompt-box {
+    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+    border: 1.5px solid #0064c8;
+    border-radius: 12px;
+    padding: 18px 22px;
+    box-shadow: 0 6px 20px rgba(0, 100, 200, 0.08);
+    margin-bottom: 28px;
+  }
+  .didi-ai-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0064c8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .didi-ai-input-group {
+    display: flex;
+    gap: 10px;
+  }
+  .didi-ai-input {
+    flex: 1;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13.5px;
+    background: #ffffff;
+  }
+  .didi-ai-input:focus {
+    outline: none;
+    border-color: #0064c8;
+    box-shadow: 0 0 0 3px rgba(0, 100, 200, 0.15);
+  }
+  .didi-ai-btn {
+    height: 42px;
+    padding: 0 20px;
+    background: #0064c8;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .didi-ai-btn:hover {
+    background: #0050a3;
+  }
+
+  /* 核心五大场景步骤卡片 */
+  .didi-step-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    margin-bottom: 20px;
+  }
+  .didi-step-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .didi-step-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0064c8;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 8px;
+  }
+
+  /* 1. 品类网格 */
+  .appliance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .appliance-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 8px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .appliance-btn:hover {
+    border-color: #93c5fd;
+    transform: translateY(-2px);
+  }
+  .appliance-btn.active {
+    border-color: #0064c8;
+    background: #eff6ff;
+    box-shadow: 0 4px 12px rgba(0, 100, 200, 0.12);
+  }
+  .appliance-icon {
+    font-size: 26px;
+    margin-bottom: 6px;
+  }
+  .appliance-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  /* 2. 故障芯片多选 */
+  .symptom-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .symptom-tag {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+  }
+  .symptom-tag:hover {
+    border-color: #0064c8;
+    background: #f0f7ff;
+  }
+  .symptom-tag.selected {
+    background: #0064c8;
+    color: #ffffff;
+    border-color: #0064c8;
+    font-weight: 600;
+  }
+
+  /* 3. 预约时段胶囊 */
+  .didi-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .didi-slot-btn {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.15s;
+  }
+  .didi-slot-btn.active {
+    background: #0064c8;
+    color: #ffffff;
+    border-color: #0064c8;
+    font-weight: 600;
+  }
+
+  /* 4. 默认地址卡片（核心：有信息时直接确认） */
+  .didi-addr-confirm-card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+  }
+  .didi-addr-confirm-card.has-data {
+    background: #f0fdf4;
+    border-color: #86efac;
+  }
+  .didi-addr-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .didi-addr-user {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .didi-addr-line {
+    font-size: 13.5px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .didi-edit-addr-btn {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #0064c8;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .didi-edit-addr-btn:hover {
+    border-color: #0064c8;
+    background: #eff6ff;
+  }
+  .didi-addr-edit-form {
+    display: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed #cbd5e1;
+  }
+
+  /* 5. 附近师傅雷达与接单模式 (滴滴打车核心) */
+  .didi-radar-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #edf8ff 100%);
+    border: 1.5px solid #93c5fd;
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+  }
+  .didi-radar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .didi-radar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0369a1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .didi-radar-pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .tech-cards-carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .tech-pick-card {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .tech-pick-card:hover {
+    border-color: #0064c8;
+    transform: translateY(-2px);
+  }
+  .tech-pick-card.selected {
+    border-color: #0064c8;
+    background: #eff6ff;
+    box-shadow: 0 4px 14px rgba(0, 100, 200, 0.15);
+  }
+  .tech-pick-card.broadcast {
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    border-color: #86efac;
+  }
+  .tech-pick-card.broadcast.selected {
+    border-color: #10b981;
+    background: #ecfdf5;
+  }
+
+  .tech-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .tech-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #0284c7;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .tech-meta-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tech-distance-badge {
+    font-size: 11.5px;
+    color: #10b981;
+    background: #dcfce7;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .tech-skills-line {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 6px;
+  }
+
+  /* 底部提交大按钮 */
+  .didi-submit-bar {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+  }
+  .didi-fee-box {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .didi-fee-label {
+    font-size: 14px;
+    color: #475569;
+  }
+  .didi-fee-val {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0064c8;
+  }
+  .didi-fee-tip {
+    font-size: 12px;
+    color: #10b981;
+    background: #dcfce7;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .didi-call-btn {
+    height: 48px;
+    padding: 0 36px;
+    background: #0064c8;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(0, 100, 200, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .didi-call-btn:hover {
+    background: #0050a3;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 100, 200, 0.35);
+  }
+
+  @media (max-width: 768px) {
+    .didi-step-card { padding: 18px 16px; }
+    .didi-submit-bar { flex-direction: column; gap: 14px; align-items: stretch; }
+    .didi-call-btn { width: 100%; justify-content: center; }
+  }
+</style>
+
+<div class="didi-repair-viewport">
+  <!-- 顶部横幅 -->
+  <div class="didi-header-hero">
+    <div class="didi-pill-tag">
+      <span>🤖 智修云 · 滴滴式极速双向撮合报修中心</span>
+    </div>
+    <h1 class="didi-main-heading">AI 智能极速报修</h1>
+    <p class="didi-sub-text">AI 引导填写 · 默认地址电话一键确认 · 附近在线师傅极速响应抢单</p>
+  </div>
+
+  <!-- AI 一句话极速解析条 -->
+  <div class="didi-ai-prompt-box">
+    <div class="didi-ai-title">
+      <span>🤖 AI 智能建单助手</span>
+      <span style="font-size: 12px; color: #64748b; font-weight: normal;">(输入一句话，自动完成品类、故障与时段匹配)</span>
+    </div>
+    <div class="didi-ai-input-group">
+      <input 
+        type="text" 
+        id="aiCopilotInput" 
+        class="didi-ai-input" 
+        placeholder="例：我家格力空调不制冷还漏水，明晚7点上门修，请安排附近师傅"
+      >
+      <button type="button" class="didi-ai-btn" onclick="runDidiAiExtract()">
+        ⚡ AI 智能解析
+      </button>
+    </div>
+  </div>
+
+  <!-- 主报修表单 -->
+  <form action="/orders/new" method="POST" id="didiOrderForm" onsubmit="return submitDidiOrder(event)">
+    {% if is_customer %}
+      <input type="hidden" name="customer_id" value="{{ current_cust.id }}">
+      <input type="hidden" name="device_id" id="didiDeviceId" value="{% if devices %}{{ devices[0].id }}{% else %}new{% endif %}">
+    {% else %}
+      <input type="hidden" name="customer_id" value="{% if customers %}{{ customers[0].id }}{% endif %}">
+      <input type="hidden" name="device_id" id="didiDeviceId" value="new">
+    {% endif %}
+
+    <!-- 1. 维修什么家电（品类与型号引导） -->
+    <div class="didi-step-card" id="stepApplianceCard">
+      <div class="didi-step-title">
+        <div>
+          <span class="didi-step-badge">1</span>
+          <span>维修什么家电？ <span style="color:#ef4444;">*</span></span>
+        </div>
+        <span style="font-size: 12.5px; color: #64748b;">支持点击常见品类或自选设备</span>
+      </div>
+
+      <!-- 客户已有设备列表 -->
+      {% if is_customer and devices %}
+        <div style="margin-bottom: 12px; font-size: 13px; font-weight: 600; color: #475569;">
+          📦 您名下的已有档案设备 (点击直接报修)：
+        </div>
+        <div class="appliance-grid" style="margin-bottom: 16px;">
+          {% for d in devices %}
+            <div class="appliance-btn {% if loop.first %}active{% endif %}" 
+                 onclick="pickExistingDevice(this, '{{ d.id }}', '{{ d.model }}')">
+              <span class="appliance-icon">💻</span>
+              <span class="appliance-name">{{ d.model }}</span>
+              <span style="font-size: 11px; color: #64748b;">保修期内</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- 快捷常见品类九宫格 -->
+      <div style="margin-bottom: 10px; font-size: 13px; font-weight: 600; color: #475569;">
+        🛠️ 常用报修家电品类快速点选：
+      </div>
+      <div class="appliance-grid" id="quickCategoryGrid">
+        <div class="appliance-btn active" onclick="pickCategory(this, '家用冷暖变频空调')">
+          <span class="appliance-icon">❄️</span>
+          <span class="appliance-name">空调制冷</span>
+        </div>
+        <div class="appliance-btn" onclick="pickCategory(this, '滚筒/波轮洗衣机')">
+          <span class="appliance-icon">🌀</span>
+          <span class="appliance-name">洗衣机</span>
+        </div>
+        <div class="appliance-btn" onclick="pickCategory(this, '风冷双开门冰箱')">
+          <span class="appliance-icon">🧊</span>
+          <span class="appliance-name">冰箱冰柜</span>
+        </div>
+        <div class="appliance-btn" onclick="pickCategory(this, '强排式恒温燃气热水器')">
+          <span class="appliance-icon">🔥</span>
+          <span class="appliance-name">燃气热水器</span>
+        </div>
+        <div class="appliance-btn" onclick="pickCategory(this, '厨房吸油烟机')">
+          <span class="appliance-icon">💨</span>
+          <span class="appliance-name">油烟机</span>
+        </div>
+        <div class="appliance-btn" onclick="pickCategory(this, '家庭电路与灯具开关')">
+          <span class="appliance-icon">⚡</span>
+          <span class="appliance-name">家庭水电</span>
+        </div>
+      </div>
+
+      <!-- 最终设备型号确认框 -->
+      <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 13px; color: #475569; white-space: nowrap;">所选设备：</span>
+        <input 
+          type="text" 
+          name="new_device_model" 
+          id="newDeviceModelInput" 
+          class="didi-ai-input" 
+          style="height: 38px; font-weight: 600; color: #0064c8;" 
+          value="家用冷暖变频空调" 
+          required
+        >
+      </div>
+    </div>
+
+    <!-- 2. 大概什么故障（选填，AI 引导推荐） -->
+    <div class="didi-step-card" id="stepFaultCard">
+      <div class="didi-step-title">
+        <div>
+          <span class="didi-step-badge">2</span>
+          <span>大概什么故障？ (选填，AI 引导)</span>
+        </div>
+        <span style="font-size: 12.5px; color: #10b981;">选填项 · 方便师傅带齐配件</span>
+      </div>
+
+      <!-- 动态高频故障芯片 -->
+      <div class="symptom-box" id="symptomTagContainer">
+        <span class="symptom-tag selected" onclick="toggleSymptom(this, '开机只吹风完全不制冷')">开机不制冷</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this, '室内机严重滴水漏水')">内机漏水</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this, '开机通电几秒后跳闸断电')">开机跳闸</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this, '运转时有刺耳剧烈异响噪音')">异响噪音</span>
+        <span class="symptom-tag" onclick="toggleSymptom(this, '暂不清楚具体故障，师傅现场排查')">暂不清楚(现场排查)</span>
+      </div>
+
+      <textarea 
+        name="description" 
+        id="orderDescInput" 
+        class="didi-ai-input" 
+        style="height: 72px; padding: 10px 14px; resize: vertical;" 
+        placeholder="可点击上方常见特征，或简单写两句（如：昨天开机吹热风，室外机不转...）"
+      >开机只吹风完全不制冷</textarea>
+    </div>
+
+    <!-- 3. 上门维修时间选择 -->
+    <div class="didi-step-card" id="stepTimeCard">
+      <div class="didi-step-title">
+        <div>
+          <span class="didi-step-badge">3</span>
+          <span>期望上门维修时间 <span style="color:#ef4444;">*</span></span>
+        </div>
+        <span style="font-size: 12.5px; color: #0284c7;">最快可预约 1 小时内极速上门</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+        <div>
+          <label style="font-size: 13px; font-weight: 600; color: #334155;">期望上门日期：</label>
+          <input 
+            type="date" 
+            name="appointment_date" 
+            id="appointmentDateInput" 
+            class="didi-ai-input" 
+            style="height: 40px; margin-top: 6px;" 
+            required
+          >
+        </div>
+        <div>
+          <label style="font-size: 13px; font-weight: 600; color: #334155;">服务响应等级：</label>
+          <select name="priority" class="didi-ai-input" style="height: 40px; margin-top: 6px;">
+            <option value="normal">标准预约 (按预约时段准时到达)</option>
+            <option value="urgent">加急急修 (优先安排附近在线师傅)</option>
+          </select>
+        </div>
+      </div>
+
+      <label style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 8px; display: block;">选择期望时段：</label>
+      <input type="hidden" name="appointment_slot" id="appointmentSlotInput" value="下午 14:00 - 16:30">
+      <div class="didi-slot-grid">
+        <div class="didi-slot-btn" onclick="selectDidiSlot(this, '上午 09:00 - 11:30')">上午 09:00 - 11:30</div>
+        <div class="didi-slot-btn" onclick="selectDidiSlot(this, '中午 11:30 - 13:30')">中午 11:30 - 13:30</div>
+        <div class="didi-slot-btn active" onclick="selectDidiSlot(this, '下午 14:00 - 16:30')">下午 14:00 - 16:30</div>
+        <div class="didi-slot-btn" onclick="selectDidiSlot(this, '晚间 18:00 - 20:30')">晚间 18:00 - 20:30</div>
+      </div>
+    </div>
+
+    <!-- 4. 维修地址与电话（核心重点：个人信息里有就只需再确认一遍） -->
+    <div class="didi-step-card" id="stepAddrCard">
+      <div class="didi-step-title">
+        <div>
+          <span class="didi-step-badge">4</span>
+          <span>确认上门服务地址与电话 <span style="color:#ef4444;">*</span></span>
+        </div>
+        <span style="font-size: 12.5px; color: #10b981;">
+          {% if current_cust and current_cust.address %}已自动关联个人档案 · 一键确认免手填{% else %}请完善地址{% endif %}
+        </span>
+      </div>
+
+      <!-- 确认信息卡片 -->
+      <div class="didi-addr-confirm-card {% if current_cust and current_cust.address %}has-data{% endif %}" id="addrDisplayBox">
+        <div class="didi-addr-meta">
+          <div class="didi-addr-user">
+            <span id="displayUserName">{{ current_cust.name if current_cust else '未设置称呼' }}</span>
+            <span style="font-weight: 500; color: #64748b;" id="displayUserPhone">{{ current_cust.phone if current_cust else '未绑定手机号' }}</span>
+            <span style="font-size: 12px; background: #e0f2fe; color: #0284c7; padding: 1px 8px; border-radius: 10px; font-weight: 600;">已认证客户</span>
+          </div>
+          <div class="didi-addr-line" style="margin-top: 4px;">
+            <span>📍</span>
+            <span id="displayUserAddr" style="font-weight: 600; color: #1e293b;">
+              {{ current_cust.address if current_cust and current_cust.address else '点击右侧按钮完善上门服务详细地址' }}
+            </span>
+          </div>
+        </div>
+
+        <button type="button" class="didi-edit-addr-btn" onclick="toggleEditAddr()">
+          ✏️ 修改地址/联系人
+        </button>
+      </div>
+
+      <!-- 原地展开编辑面板 (默认隐藏，若无地址则展开) -->
+      <div class="didi-addr-edit-form" id="addrEditForm" {% if not current_cust or not current_cust.address %}style="display: block;"{% endif %}>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 12.5px; color: #475569;">联系人姓名/称呼：</label>
+            <input type="text" name="customer_name" id="editNameInput" class="didi-ai-input" style="height: 38px; margin-top: 4px;" value="{{ current_cust.name if current_cust else '' }}" placeholder="如：张先生">
+          </div>
+          <div>
+            <label style="font-size: 12.5px; color: #475569;">联系手机号：</label>
+            <input type="tel" name="customer_phone" id="editPhoneInput" class="didi-ai-input" style="height: 38px; margin-top: 4px;" value="{{ current_cust.phone if current_cust else '' }}" placeholder="11位手机号">
+          </div>
+        </div>
+        <div>
+          <label style="font-size: 12.5px; color: #475569;">详细服务上门地址 (含小区、楼栋及门牌号)：</label>
+          <input 
+            type="text" 
+            name="service_address" 
+            id="editAddrInput" 
+            class="didi-ai-input" 
+            style="height: 38px; margin-top: 4px;" 
+            value="{{ current_cust.address if current_cust else '' }}" 
+            placeholder="例如：深圳市南山区高新南九道科技园南区 5 栋 602 室"
+            required
+            oninput="syncAddrDisplay()"
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 附近在线师傅雷达展示与接单模式 (滴滴打车模式核心) -->
+    <div class="didi-step-card" id="stepRadarCard">
+      <div class="didi-step-title">
+        <div>
+          <span class="didi-step-badge">5</span>
+          <span>附近在线师傅与接单模式 (滴滴式双向撮合) <span style="color:#ef4444;">*</span></span>
+        </div>
+        <span style="font-size: 12.5px; color: #0284c7;">实时雷达探测</span>
+      </div>
+
+      <div class="didi-radar-box">
+        <div class="didi-radar-header">
+          <div class="didi-radar-title">
+            <div class="didi-radar-pulse"></div>
+            <span>雷达已探测到周边 {{ active_techs|length if active_techs else 3 }} 位认证师傅在线待命</span>
+          </div>
+          <span style="font-size: 12px; color: #64748b;">支持指定专修师傅或全城广播抢单</span>
+        </div>
+
+        <input type="hidden" name="selected_tech_id" id="selectedTechId" value="broadcast">
+
+        <!-- 师傅卡片候选轮播/网格 -->
+        <div class="tech-cards-carousel">
+          <!-- 滴滴式全城广播抢单卡片 (推荐) -->
+          <div class="tech-pick-card broadcast selected" onclick="pickTechOption(this, 'broadcast')">
+            <div class="tech-card-header">
+              <div class="tech-avatar" style="background: #10b981;">⚡</div>
+              <div>
+                <div class="tech-meta-name">
+                  <span>全城就近广播 (推荐)</span>
+                  <span class="tech-distance-badge">极速抢单</span>
+                </div>
+                <div class="tech-skills-line">附近 3-5 公里所有持证空闲师傅秒级抢单</div>
+              </div>
+            </div>
+            <div style="font-size: 11.5px; color: #059669; margin-top: 8px; font-weight: 600;">
+              ✓ 响应最快，平均 90 秒内接单
+            </div>
+          </div>
+
+          <!-- 在线具体师傅列表 (支持客户自选) -->
+          {% for t in active_techs %}
+            <div class="tech-pick-card" onclick="pickTechOption(this, '{{ t.id }}')">
+              <div class="tech-card-header">
+                <div class="tech-avatar">{{ t.name[0] }}</div>
+                <div>
+                  <div class="tech-meta-name">
+                    <span>{{ t.name }}</span>
+                    <span class="tech-distance-badge">距您 {{ 0.8 + loop.index * 0.7 }}km</span>
+                  </div>
+                  <div class="tech-skills-line">{{ t.cert_title or '持证专业工程师' }} · 好评 99%</div>
+                </div>
+              </div>
+              <div style="font-size: 11.5px; color: #64748b; margin-top: 8px;">
+                擅长：{{ t.skill_tags or '空调,洗衣机,电路排故' }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部费用托管与立即呼叫按钮栏 -->
+    <div class="didi-submit-bar">
+      <div class="didi-fee-box">
+        <span class="didi-fee-label">上门排查检测费：</span>
+        <span class="didi-fee-val">¥30.00</span>
+        <span class="didi-fee-tip">平台资金托管 · 凭6位动态码现场核销</span>
+      </div>
+
+      <button type="submit" class="didi-call-btn" id="didiSubmitBtn">
+        <span>🚀 确认并一键呼叫师傅上门</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // 初始化日期为明天
+  window.addEventListener('DOMContentLoaded', () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateInput = document.getElementById('appointmentDateInput');
+    if (dateInput && !dateInput.value) {
+      dateInput.value = tomorrow.toISOString().split('T')[0];
+    }
+  });
+
+  // 品类点选
+  function pickCategory(btn, name) {
+    document.querySelectorAll('.appliance-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('newDeviceModelInput').value = name;
+    document.getElementById('didiDeviceId').value = 'new';
+    refreshSymptomsByCategory(name);
+  }
+
+  // 现有设备点选
+  function pickExistingDevice(btn, id, model) {
+    document.querySelectorAll('.appliance-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('didiDeviceId').value = id;
+    document.getElementById('newDeviceModelInput').value = model;
+    refreshSymptomsByCategory(model);
+  }
+
+  // 动态更新故障标签
+  function refreshSymptomsByCategory(cat) {
+    const wrap = document.getElementById('symptomTagContainer');
+    wrap.innerHTML = '';
+    let tags = [];
+    if (cat.includes('空调')) {
+      tags = ['开机只吹风不制冷', '内机漏水滴水', '开机跳闸断电', '运行剧烈异响', '暂不清楚(现场排查)'];
+    } else if (cat.includes('洗衣机')) {
+      tags = ['脱水剧烈晃动撞桶', '不能进水/不排水', '底部大量漏水', '通电无反应', '暂不清楚(现场排查)'];
+    } else if (cat.includes('冰箱')) {
+      tags = ['冷藏冷冻都不冷', '冷冻室严重结冰', '压缩机发烫且异响', '门封条漏气', '暂不清楚(现场排查)'];
+    } else if (cat.includes('热水器')) {
+      tags = ['打不着火不出热水', '显示E1/E2故障代码', '底部漏水断电', '水温忽冷忽热', '暂不清楚(现场排查)'];
+    } else {
+      tags = ['无法正常开机运转', '运行异响或冒火花', '局部漏水短路', '暂不清楚(现场排查)'];
+    }
+
+    tags.forEach((t, i) => {
+      const span = document.createElement('span');
+      span.className = 'symptom-tag' + (i === 0 ? ' selected' : '');
+      span.innerText = t;
+      span.onclick = function() { toggleSymptom(this, t); };
+      wrap.appendChild(span);
+    });
+    document.getElementById('orderDescInput').value = tags[0];
+  }
+
+  // 故障标签选中与追加
+  function toggleSymptom(tag, text) {
+    tag.classList.toggle('selected');
+    const selected = Array.from(document.querySelectorAll('.symptom-tag.selected')).map(el => el.innerText);
+    document.getElementById('orderDescInput').value = selected.length > 0 ? selected.join('；') : text;
+  }
+
+  // 时段选择
+  function selectDidiSlot(btn, slotText) {
+    document.querySelectorAll('.didi-slot-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('appointmentSlotInput').value = slotText;
+  }
+
+  // 切换师傅接单模式 (指定师傅 vs 滴滴广播)
+  function pickTechOption(card, techId) {
+    document.querySelectorAll('.tech-pick-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    document.getElementById('selectedTechId').value = techId;
+    const btnText = document.querySelector('#didiSubmitBtn span');
+    if (techId === 'broadcast') {
+      btnText.innerText = '🚀 确认并全城广播呼叫师傅 (抢单)';
+    } else {
+      btnText.innerText = '🎯 确认并指定该师傅上门接单';
+    }
+  }
+
+  // 编辑地址展开/折叠
+  function toggleEditAddr() {
+    const form = document.getElementById('addrEditForm');
+    form.style.display = form.style.display === 'block' ? 'none' : 'block';
+  }
+
+  // 同步编辑的内容到确认卡片
+  function syncAddrDisplay() {
+    const addr = document.getElementById('editAddrInput').value.trim();
+    if (addr) {
+      document.getElementById('displayUserAddr').innerText = addr;
+      document.getElementById('addrDisplayBox').classList.add('has-data');
+    }
+  }
+
+  // AI 智能一句话提取
+  function runDidiAiExtract() {
+    const text = document.getElementById('aiCopilotInput').value.trim();
+    if (!text) return;
+
+    if (text.includes('空调')) pickCategory(document.querySelector('.appliance-btn'), '家用冷暖变频空调');
+    else if (text.includes('洗衣机')) pickCategory(document.querySelectorAll('.appliance-btn')[1], '滚筒/波轮洗衣机');
+    else if (text.includes('冰箱')) pickCategory(document.querySelectorAll('.appliance-btn')[2], '风冷双开门冰箱');
+    else if (text.includes('热水器')) pickCategory(document.querySelectorAll('.appliance-btn')[3], '强排式恒温燃气热水器');
+
+    document.getElementById('orderDescInput').value = text;
+    alert('🎉 AI 已为您自动提取电器故障，并匹配了附近空闲师傅！请确认地址后点击呼叫。');
+  }
+
+  // 提交前校验
+  function submitDidiOrder(e) {
+    const addr = document.getElementById('editAddrInput').value.trim();
+    if (!addr || addr.length < 5) {
+      alert('请先确认或填写详细的服务上门地址（含门牌号）！');
+      document.getElementById('addrEditForm').style.display = 'block';
+      document.getElementById('editAddrInput').focus();
+      return false;
+    }
+    return true;
+  }
+</script>
+{% endblock %}

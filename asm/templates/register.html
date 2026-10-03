@@ -1,0 +1,733 @@
+{% extends "base.html" %}
+
+{% block title %}账号注册 ── 智修云 (阿里云生态合作系统){% endblock %}
+
+{% block content %}
+<style>
+  /* ══════════════════════════════════════════════════════════════
+     阿里云 (Aliyun) 风格像素级企业账号注册界面
+     ══════════════════════════════════════════════════════════════ */
+  
+  /* 隐藏全局黑胶囊导航，完全接管为阿里云企业顶栏 */
+  .app-header-pill-wrapper {
+    display: none !important;
+  }
+
+  .portal-bleed-wrapper, .container-full-bleed {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .ali-reg-viewport {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #111827;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* 阿里云高阶科技流光丝带背景 (纯 CSS 软弥散光晕) */
+  .ali-bg-mesh {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .ali-bg-mesh::before {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    left: 15%;
+    width: 70vw;
+    height: 55vh;
+    background: radial-gradient(ellipse at center, rgba(199, 230, 255, 0.65) 0%, rgba(224, 215, 255, 0.45) 45%, rgba(255, 255, 255, 0) 75%);
+    filter: blur(65px);
+    transform: rotate(-10deg);
+  }
+  .ali-bg-mesh::after {
+    content: '';
+    position: absolute;
+    bottom: 5%;
+    right: 5%;
+    width: 45vw;
+    height: 45vh;
+    background: radial-gradient(ellipse at center, rgba(255, 226, 236, 0.45) 0%, rgba(200, 235, 255, 0.35) 50%, rgba(255, 255, 255, 0) 80%);
+    filter: blur(70px);
+  }
+
+  /* ── 1. 顶部 Header ── */
+  .ali-header {
+    height: 64px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 10;
+  }
+  .ali-logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .ali-logo-symbol {
+    width: 34px;
+    height: 34px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ali-logo-symbol svg {
+    width: 100%;
+    height: 100%;
+  }
+  .ali-brand-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ff6a00;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .ali-brand-text span {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #4b5563;
+  }
+  
+  .ali-header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 13.5px;
+    color: #4b5563;
+  }
+  .ali-header-link {
+    color: #4b5563;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .ali-header-link:hover {
+    color: #0064c8;
+  }
+  .ali-country-select {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #374151;
+  }
+
+  /* ── 2. 中间主要区域 ── */
+  .ali-main-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 24px 56px;
+    position: relative;
+    z-index: 5;
+  }
+
+  .ali-hero-banner {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .ali-hero-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.5px;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .ali-hero-title .ai-text {
+    color: #0064c8;
+    font-weight: 800;
+    font-size: 36px;
+  }
+  .ali-hero-sub {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #4b5563;
+  }
+  .ali-hero-sub .highlight {
+    color: #0064c8;
+    font-weight: 700;
+  }
+
+  /* ── 3. 阿里云企业注册白卡片 ── */
+  .ali-reg-card {
+    width: 100%;
+    max-width: 780px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.03);
+    border: 1px solid #ebeef5;
+    padding: 36px 48px;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  /* 顶部角色注册 Tab 切换 */
+  .ali-reg-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 12px;
+    margin-bottom: 28px;
+  }
+  .ali-tabs-left {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .ali-tab-btn {
+    font-size: 16px;
+    font-weight: 500;
+    color: #4b5563;
+    cursor: pointer;
+    padding-bottom: 10px;
+    position: relative;
+    transition: color 0.15s;
+    user-select: none;
+  }
+  .ali-tab-btn:hover {
+    color: #0064c8;
+  }
+  .ali-tab-btn.active {
+    color: #0064c8;
+    font-weight: 700;
+  }
+  .ali-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -13px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #0064c8;
+    border-radius: 2px;
+  }
+
+  .ali-login-redirect {
+    font-size: 13.5px;
+    color: #0064c8;
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .ali-login-redirect:hover {
+    text-decoration: underline;
+  }
+
+  /* 表单网格 */
+  .ali-reg-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+  }
+  .ali-col-full {
+    grid-column: 1 / -1;
+  }
+
+  /* 标准阿里云企业输入框 */
+  .ali-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ali-field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ali-field-label .required {
+    color: #ef4444;
+  }
+
+  .ali-input-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    height: 40px;
+    padding: 0 12px;
+    background: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .ali-input-wrapper:focus-within {
+    border-color: #0064c8;
+    box-shadow: 0 0 0 2px rgba(0, 100, 200, 0.15);
+  }
+  .ali-input-wrapper input {
+    flex: 1;
+    border: none;
+    outline: none;
+    height: 100%;
+    font-size: 13.5px;
+    color: #111827;
+    background: transparent;
+  }
+  .ali-input-wrapper input::placeholder {
+    color: #b5b5b5;
+  }
+  .ali-phone-prefix {
+    font-size: 13px;
+    color: #4b5563;
+    padding-right: 8px;
+    margin-right: 8px;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    user-select: none;
+  }
+  .ali-sms-btn {
+    border: none;
+    background: transparent;
+    color: #0064c8;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .ali-sms-btn:hover {
+    background: #f0f7ff;
+  }
+
+  /* 师傅入驻专属扩展区 */
+  .ali-tech-extra {
+    display: none;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 16px;
+    margin-top: 6px;
+  }
+  .ali-tech-extra.show {
+    display: block;
+  }
+  .ali-skill-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .ali-skill-chip {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+  }
+  .ali-skill-chip.selected {
+    background: #e0f2fe;
+    border-color: #0284c7;
+    color: #0284c7;
+    font-weight: 600;
+  }
+
+  /* 协议勾选 */
+  .ali-agreement-row {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #6b7280;
+  }
+  .ali-agreement-row a {
+    color: #0064c8;
+    text-decoration: none;
+  }
+  .ali-agreement-row a:hover {
+    text-decoration: underline;
+  }
+
+  /* 阿里经典提交大按钮 */
+  .ali-reg-btn {
+    width: 100%;
+    height: 42px;
+    background: #0064c8;
+    border: 1px solid #0064c8;
+    border-radius: 4px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .ali-reg-btn:hover {
+    background: #0050a3;
+    border-color: #0050a3;
+    box-shadow: 0 2px 8px rgba(0, 100, 200, 0.25);
+  }
+
+  /* ── 4. 底部 Footer ── */
+  .ali-footer {
+    padding: 32px 24px 24px;
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+  }
+  .ali-footer-nav {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+  .ali-footer-nav a {
+    color: #6b7280;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .ali-footer-nav a:hover {
+    color: #0064c8;
+  }
+  .ali-footer-eco {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 10px;
+  }
+  .ali-footer-eco span {
+    color: #9ca3af;
+    cursor: default;
+  }
+  .ali-footer-copy {
+    font-size: 11.5px;
+    color: #9ca3af;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .ali-header { padding: 0 16px; }
+    .ali-reg-card { padding: 24px 20px; border-radius: 0; box-shadow: none; border: none; }
+    .ali-reg-grid { grid-template-columns: 1fr; }
+    .ali-footer { padding: 20px 16px; }
+  }
+</style>
+
+<div class="ali-reg-viewport">
+  <!-- 科技流光弥散背景 -->
+  <div class="ali-bg-mesh"></div>
+
+  <!-- 1. 顶部 Header -->
+  <header class="ali-header">
+    <a href="/portal" class="ali-logo-group">
+      <div class="ali-logo-symbol">
+        <svg viewBox="0 0 38 38" fill="none">
+          <path d="M12 9C7.02944 9 3 13.0294 3 18C3 22.9706 7.02944 27 12 27H14V23H12C9.23858 23 7 20.7614 7 18C7 15.2386 9.23858 13 12 13H14V9H12Z" fill="#FF6A00"/>
+          <path d="M26 9C30.9706 9 35 13.0294 35 18C35 22.9706 30.9706 27 26 27H24V23H26C28.7614 23 31 20.7614 31 18C31 15.2386 28.7614 13 26 13H24V9H26Z" fill="#FF6A00"/>
+          <rect x="15" y="16" width="8" height="4" rx="2" fill="#FF6A00"/>
+        </svg>
+      </div>
+      <div class="ali-brand-text">
+        智修云
+        <span>| 阿里云生态互联</span>
+      </div>
+    </a>
+
+    <div class="ali-header-right">
+      <div class="ali-country-select">
+        中国站
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </div>
+      <a href="/portal" class="ali-header-link">服务大厅</a>
+      <a href="/safety" class="ali-header-link">安全合规</a>
+    </div>
+  </header>
+
+  <!-- 2. 中间主要注册区 -->
+  <main class="ali-main-body">
+    <div class="ali-hero-banner">
+      <div class="ali-hero-title">
+        <span class="ai-text">AI</span> 驱动的智能工单与运维服务
+      </div>
+      <div class="ali-hero-sub">全新一代 智修云账号注册 · 开启透明可靠售后保障</div>
+    </div>
+
+    <!-- 居中注册白卡片 -->
+    <div class="ali-reg-card">
+      <div class="ali-reg-tabs">
+        <div class="ali-tabs-left">
+          <div class="ali-tab-btn active" id="tabCustomer" onclick="switchRegRole('customer')">注册报修客户账号</div>
+          <div class="ali-tab-btn" id="tabTechnician" onclick="switchRegRole('technician')">入驻成为维修师傅</div>
+        </div>
+        <a href="/login" class="ali-login-redirect">已有账号？立即登录 &gt;</a>
+      </div>
+
+      <!-- 注册表单 -->
+      <form method="POST" action="{{ url_for('auth.register') }}" id="regForm">
+        <input type="hidden" name="role" id="roleInput" value="customer">
+
+        <div class="ali-reg-grid">
+          <!-- 账号名 (必填) -->
+          <div class="ali-input-group">
+            <label class="ali-field-label">账号名 <span class="required">*</span></label>
+            <div class="ali-input-wrapper">
+              <input 
+                type="text" 
+                name="username" 
+                id="regUsername" 
+                placeholder="英文字母、数字组合" 
+                value="{{ username or '' }}" 
+                required
+              >
+            </div>
+          </div>
+
+          <!-- 真实姓名 (必填) -->
+          <div class="ali-input-group">
+            <label class="ali-field-label">真实姓名 / 称呼 <span class="required">*</span></label>
+            <div class="ali-input-wrapper">
+              <input 
+                type="text" 
+                name="name" 
+                id="regName" 
+                placeholder="例如：张先生 / 李师傅" 
+                value="{{ name or '' }}" 
+                required
+              >
+            </div>
+          </div>
+
+          <!-- 手机号 (带+86和验证码) -->
+          <div class="ali-input-group ali-col-full">
+            <label class="ali-field-label">联系手机号码 <span class="required">*</span></label>
+            <div class="ali-input-wrapper">
+              <span class="ali-phone-prefix">+86 ▾</span>
+              <input 
+                type="tel" 
+                name="phone" 
+                id="regPhone" 
+                placeholder="请输入11位中国大陆手机号码" 
+                value="{{ phone or '' }}" 
+                maxlength="11" 
+                required
+              >
+              <button type="button" class="ali-sms-btn" onclick="sendSmsCode(this)">获取验证码</button>
+            </div>
+          </div>
+
+          <!-- 设置密码 -->
+          <div class="ali-input-group">
+            <label class="ali-field-label">登录密码 <span class="required">*</span></label>
+            <div class="ali-input-wrapper">
+              <input 
+                type="password" 
+                name="password" 
+                id="regPassword" 
+                placeholder="请输入6位以上安全密码" 
+                required
+              >
+            </div>
+          </div>
+
+          <!-- 确认密码 -->
+          <div class="ali-input-group">
+            <label class="ali-field-label">确认登录密码 <span class="required">*</span></label>
+            <div class="ali-input-wrapper">
+              <input 
+                type="password" 
+                name="confirm_password" 
+                id="regConfirmPassword" 
+                placeholder="请再次输入相同密码" 
+                required
+              >
+            </div>
+          </div>
+
+          <!-- 常用服务地址 -->
+          <div class="ali-input-group ali-col-full">
+            <label class="ali-field-label" id="addressLabel">常用服务地址 / 派修区域</label>
+            <div class="ali-input-wrapper">
+              <input 
+                type="text" 
+                name="address" 
+                id="regAddress" 
+                placeholder="例如：广东省深圳市南山区粤海街道高新科技园南区" 
+                value="{{ address or '' }}"
+              >
+            </div>
+          </div>
+
+          <!-- 技师专属入驻配置 (选择师傅时展开) -->
+          <div class="ali-col-full ali-tech-extra" id="techExtraBox">
+            <label class="ali-field-label">擅长维修品类与认证资格</label>
+            <div class="ali-skill-chips">
+              <span class="ali-skill-chip selected" onclick="toggleChip(this)">空调制冷</span>
+              <span class="ali-skill-chip selected" onclick="toggleChip(this)">冰箱冰柜</span>
+              <span class="ali-skill-chip selected" onclick="toggleChip(this)">洗衣机与烘干机</span>
+              <span class="ali-skill-chip" onclick="toggleChip(this)">厨房烟机灶具</span>
+              <span class="ali-skill-chip" onclick="toggleChip(this)">燃气热水器</span>
+              <span class="ali-skill-chip" onclick="toggleChip(this)">电路与家庭水电</span>
+            </div>
+            <input type="hidden" name="skills" id="skillsInput" value="空调制冷,冰箱冰柜,洗衣机与烘干机">
+
+            <div style="margin-top: 12px; display: flex; gap: 16px;">
+              <div style="flex: 1;">
+                <label style="font-size: 12px; color: #64748b;">资质认证头衔</label>
+                <div class="ali-input-wrapper" style="margin-top: 4px; height: 36px;">
+                  <input type="text" name="cert_title" value="持证高级维修工程师" style="font-size: 13px;">
+                </div>
+              </div>
+              <div style="width: 140px;">
+                <label style="font-size: 12px; color: #64748b;">服务接单半径</label>
+                <div class="ali-input-wrapper" style="margin-top: 4px; height: 36px;">
+                  <input type="number" name="service_radius_km" value="10" step="1" style="font-size: 13px;">
+                  <span style="font-size: 12px; color: #94a3b8;">km</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 协议勾选 -->
+        <div class="ali-agreement-row">
+          <input type="checkbox" id="agreeCheck" required checked>
+          <label for="agreeCheck">
+            我已阅读并同意 <a href="/safety" target="_blank">《智修云用户服务协议》</a> 和 <a href="/safety" target="_blank">《隐私权保护政策》</a>
+          </label>
+        </div>
+
+        <!-- 提交按钮 -->
+        <button type="submit" class="ali-reg-btn" id="regSubmitBtn">
+          同意协议并注册
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <!-- 3. 底部 Footer -->
+  <footer class="ali-footer">
+    <div class="ali-footer-nav">
+      <a href="/safety">法律声明</a>
+      <a href="/safety">Cookies政策</a>
+      <a href="/safety">廉正举报</a>
+      <a href="/safety">安全举报</a>
+      <a href="/portal">联系我们</a>
+      <a href="/recruit">加入我们</a>
+      <a href="/login">账号注册与登录</a>
+    </div>
+    <div class="ali-footer-eco">
+      <span>阿里巴巴集团</span> ·
+      <span>淘宝网</span> ·
+      <span>千问AI大模型</span> ·
+      <span>钉钉协同办公</span> ·
+      <span>天猫商城</span> ·
+      <span>全球速卖通</span> ·
+      <span>智修云计算</span> ·
+      <span>高德地图</span> ·
+      <span>优酷视频</span> ·
+      <span>支付宝</span> ·
+      <span>达摩院</span>
+    </div>
+    <div class="ali-footer-copy">
+      © 2009-现在 Aliyun.com &amp; 智修云 版权所有 增值电信业务经营许可证：浙B2-20080101 域名注册服务机构许可：浙D3-20210002
+    </div>
+  </footer>
+</div>
+
+<script>
+  // 切换注册角色身份
+  function switchRegRole(role) {
+    const tabCust = document.getElementById('tabCustomer');
+    const tabTech = document.getElementById('tabTechnician');
+    const roleInput = document.getElementById('roleInput');
+    const techBox = document.getElementById('techExtraBox');
+    const addrLabel = document.getElementById('addressLabel');
+    const submitBtn = document.getElementById('regSubmitBtn');
+
+    if (role === 'technician') {
+      tabCust.classList.remove('active');
+      tabTech.classList.add('active');
+      roleInput.value = 'technician';
+      techBox.classList.add('show');
+      addrLabel.innerText = '常驻常接单商圈网格 / 工作站';
+      submitBtn.innerText = '入驻智修云师傅团队';
+    } else {
+      tabTech.classList.remove('active');
+      tabCust.classList.add('active');
+      roleInput.value = 'customer';
+      techBox.classList.remove('show');
+      addrLabel.innerText = '常用上门报修地址';
+      submitBtn.innerText = '同意协议并注册客户账号';
+    }
+  }
+
+  // 技能标签多选
+  function toggleChip(chip) {
+    chip.classList.toggle('selected');
+    const selected = Array.from(document.querySelectorAll('.ali-skill-chip.selected')).map(el => el.innerText.trim());
+    document.getElementById('skillsInput').value = selected.join(',');
+  }
+
+  // 短信验证码模拟倒计时
+  function sendSmsCode(btn) {
+    const phone = document.getElementById('regPhone').value.trim();
+    if (!phone || !/^1\d{10}$/.test(phone)) {
+      alert('请先输入正确的 11 位中国大陆手机号码');
+      return;
+    }
+    let count = 60;
+    btn.disabled = true;
+    btn.style.color = '#9ca3af';
+    btn.style.cursor = 'not-allowed';
+    btn.innerText = `${count}s 后重发`;
+    const timer = setInterval(() => {
+      count--;
+      if (count > 0) {
+        btn.innerText = `${count}s 后重发`;
+      } else {
+        clearInterval(timer);
+        btn.disabled = false;
+        btn.style.color = '#0064c8';
+        btn.style.cursor = 'pointer';
+        btn.innerText = '获取验证码';
+      }
+    }, 1000);
+  }
+</script>
+{% endblock %}

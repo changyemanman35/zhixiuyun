@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Power AI 智能助手 — 全场景家电故障诊断与分步报修向导</title>
+  <meta name="description" content="The most powerful AI ever deployed in home appliance service & talent acquisition">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+
+  <!-- General Sans font from Fontshare -->
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+
+  <!-- Geist Sans / Inter fallback -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       THEME & EXACT CSS VARIABLES SPECIFICATION
+       ══════════════════════════════════════════════════════════════ */
+    :root {
+      /* Theme colors (index.css CSS variables) */
+      --background: 260 87% 3%;      /* Deep dark blue-purple #070314 */
+      --foreground: 40 6% 95%;       /* Off-white #f3f3f2 */
+      --hero-sub: 40 6% 82%;         /* Hero subtitle #d4d3d0 */
+      
+      --color-bg: hsl(var(--background));
+      --color-fg: hsl(var(--foreground));
+      --color-sub: hsl(var(--hero-sub));
+      
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-headline: 'General Sans', 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background-color: var(--color-bg);
+      color: var(--color-fg);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       BACKGROUND VIDEO & JS FADE LOOP SPECIFICATION
+       ══════════════════════════════════════════════════════════════ */
+    .video-hero-wrapper {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #bgVideo {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Blurred overlay shape centered behind content */
+    .blurred-overlay-shape {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 984px;
+      height: 527px;
+      opacity: 0.9;
+      background-color: #030712; /* bg-gray-950 */
+      filter: blur(82px);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Hero foreground content sits in relative z-10 */
+    .hero-content-layer {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow: visible;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       NAVBAR SPECIFICATION
+       Full width, py-5 px-8, flex row justify-between
+       Divider line: 1px gradient from-transparent via-foreground/20 to-transparent
+       ══════════════════════════════════════════════════════════════ */
+    .navbar {
+      width: 100%;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--color-fg);
+    }
+    .navbar-logo-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #fcd34d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+    }
+    .navbar-brand-name {
+      font-family: var(--font-headline);
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--color-fg);
+    }
+
+    .navbar-center-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-btn {
+      background: none;
+      border: none;
+      color: rgba(243, 243, 242, 0.8);
+      font-size: 14.5px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      position: relative;
+      padding: 6px 4px;
+    }
+    .nav-btn:hover {
+      color: #ffffff;
+      opacity: 1;
+    }
+    .nav-btn.active {
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .nav-btn.active::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.8);
+    }
+    .chevron-down-icon {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.2s;
+    }
+
+    .navbar-auth-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .heroSecondary-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--color-fg);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+      padding: 8px 18px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .heroSecondary-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+      color: #ffffff;
+    }
+
+    .nav-logout-btn {
+      color: rgba(243, 243, 242, 0.65);
+      font-size: 13px;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .nav-logout-btn:hover {
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.4);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* 移动端汉堡与抽屉 */
+    .navbar-burger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 0 8px;
+    }
+    .navbar-burger span {
+      display: block;
+      height: 2px;
+      background: #ffffff;
+      border-radius: 2px;
+    }
+    .mobile-nav-drawer {
+      display: none;
+      position: absolute;
+      top: 76px;
+      left: 16px;
+      right: 16px;
+      background: rgba(18, 14, 38, 0.96);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      z-index: 100;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .mobile-nav-drawer.open {
+      display: flex;
+    }
+    .mobile-drawer-link {
+      color: rgba(243, 243, 242, 0.85);
+      font-size: 14.5px;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+    .mobile-drawer-link:hover, .mobile-drawer-link.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .navbar-divider {
+      width: 100%;
+      height: 1px;
+      margin-top: 3px;
+      background: linear-gradient(90deg, transparent 0%, rgba(243, 243, 242, 0.2) 50%, transparent 100%);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       LIQUID GLASS UTILITY CLASS (SPECIFICATION)
+       ══════════════════════════════════════════════════════════════ */
+    .liquid-glass {
+      background: rgba(255, 255, 255, 0.01);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(4px);
+      border: none;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .liquid-glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.4px;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.45) 0%,
+        rgba(255, 255, 255, 0.15) 20%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.15) 80%,
+        rgba(255, 255, 255, 0.45) 100%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       HERO CONTENT SPECIFICATION
+       Vertically centered in remaining space via flex-1
+       Headline: "Power AI" text-[220px], leading-[1.02], tracking-[-0.024em]
+       "AI" gradient: to left, #6366f1, #a855f7, #fcd34d
+       Subtitle: text-hero-sub, text-lg, leading-8, max-w-md, mt-[9px], opacity-80
+       CTA: px-[29px] py-[24px], mt-[25px]
+       ══════════════════════════════════════════════════════════════ */
+    .hero-center-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    .hero-headline {
+      font-family: var(--font-headline);
+      font-size: clamp(64px, 14vw, 210px);
+      font-weight: 400;
+      line-height: 1.02;
+      letter-spacing: -0.024em;
+      color: var(--color-fg);
+      margin: 0;
+      user-select: none;
+    }
+    .hero-headline-ai {
+      background-image: linear-gradient(to left, #6366f1, #a855f7, #fcd34d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .hero-subtitle {
+      color: var(--color-sub);
+      font-size: 18px;
+      line-height: 32px;
+      max-width: 480px;
+      margin-top: 9px;
+      opacity: 0.8;
+      font-weight: 400;
+    }
+
+    .hero-cta-btn {
+      margin-top: 25px;
+      padding: 18px 36px;
+      border-radius: 9999px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-fg);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+    .hero-cta-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(168, 85, 247, 0.25);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       AI 智能报修分步向导（整合在 LIQUID GLASS 奢华微拟态面板中）
+       ══════════════════════════════════════════════════════════════ */
+    .wizard-drawer-section {
+      width: 100%;
+      max-width: 860px;
+      margin: 32px auto 40px;
+    }
+
+    .wizard-glass-card {
+      border-radius: 24px;
+      padding: 32px 36px;
+      background: rgba(15, 12, 29, 0.65);
+      backdrop-filter: blur(20px) saturate(140%);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    /* 步骤指示胶囊 */
+    .step-tracker-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .tracker-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: rgba(243, 243, 242, 0.5);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .tracker-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .tracker-item.active {
+      color: #ffffff;
+    }
+    .tracker-item.active .tracker-circle {
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+      color: #ffffff;
+    }
+    .tracker-item.completed {
+      color: #34d399;
+    }
+    .tracker-item.completed .tracker-circle {
+      background: #10b981;
+      color: #ffffff;
+    }
+    .tracker-line {
+      flex: 1;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 0 12px;
+    }
+    .tracker-line.completed {
+      background: #10b981;
+    }
+
+    /* 自然语言一句话填单框 */
+    .nlp-speed-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nlp-input {
+      flex: 1;
+      height: 38px;
+      font-size: 13.5px;
+      color: #ffffff;
+      background: transparent;
+      border: none;
+      outline: none;
+    }
+    .nlp-input::placeholder {
+      color: rgba(243, 243, 242, 0.4);
+    }
+    .nlp-submit-btn {
+      height: 36px;
+      padding: 0 18px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nlp-submit-btn:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+
+    /* 分步向导切换窗 */
+    .step-pane {
+      display: none;
+      animation: paneFade 0.3s ease-in-out;
+    }
+    .step-pane.active {
+      display: block;
+    }
+    @keyframes paneFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pane-h2 {
+      font-family: var(--font-headline);
+      font-size: 18px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .pane-desc {
+      font-size: 13px;
+      color: var(--color-sub);
+      margin-bottom: 18px;
+    }
+
+    /* Step 1: 品类网格 */
+    .appliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .appliance-tile {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .appliance-tile:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(168, 85, 247, 0.4);
+      transform: translateY(-2px);
+    }
+    .appliance-tile.selected {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: #a855f7;
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.3);
+    }
+    .appliance-icon {
+      font-size: 26px;
+      margin-bottom: 6px;
+    }
+    .appliance-title {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .glass-input {
+      width: 100%;
+      height: 42px;
+      padding: 0 14px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 13.5px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .glass-input:focus {
+      border-color: #a855f7;
+      box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+    }
+    textarea.glass-input {
+      height: auto;
+      padding: 12px 14px;
+      line-height: 1.5;
+    }
+
+    /* Step 2: 故障芯片多选 */
+    .chip-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .symptom-chip-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #d4d3d0;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .symptom-chip-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(168, 85, 247, 0.4);
+    }
+    .symptom-chip-btn.selected {
+      background: #a855f7;
+      color: #ffffff;
+      border-color: #a855f7;
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+    }
+
+    /* Step 3: 时间时段 */
+    .date-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .date-tag {
+      padding: 9px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .date-tag:hover {
+      border-color: #a855f7;
+    }
+    .date-tag.selected {
+      background: #a855f7;
+      color: #ffffff;
+      border-color: #a855f7;
+      font-weight: 600;
+    }
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .slot-tile {
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      text-align: center;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .slot-tile:hover {
+      border-color: #a855f7;
+    }
+    .slot-tile.selected {
+      background: #a855f7;
+      color: #ffffff;
+      border-color: #a855f7;
+      font-weight: 600;
+    }
+
+    /* 底部操作按钮 */
+    .step-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .btn-step-prev {
+      height: 42px;
+      padding: 0 20px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #d4d3d0;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-step-prev:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+    .btn-step-next {
+      height: 42px;
+      padding: 0 28px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(168, 85, 247, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-step-next:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       LOGO MARQUEE SPECIFICATION (PINNED TO BOTTOM OF HERO, pb-10)
+       Container: max-w-5xl mx-auto
+       Left: static text "Relied on by brands / across the globe" text-foreground/50 text-sm
+       Right: infinite scrolling marquee with logos: Vortex, Nimbus, Prysma, Cirrus, Kynder, Halcyn
+       Each logo: liquid-glass 24x24 rounded-lg icon showing first letter + name text-base font-semibold text-foreground
+       Animation: translateX(0%) → translateX(-50%), 20s linear infinite
+       gap-16 between logos, gap-12 between text and marquee
+       ══════════════════════════════════════════════════════════════ */
+    .marquee-bottom-container {
+      width: 100%;
+      max-width: 1024px; /* max-w-5xl */
+      margin: auto auto 0;
+      padding: 0 24px 40px; /* pb-10 */
+      display: flex;
+      align-items: center;
+      gap: 48px; /* gap-12 between text and marquee */
+    }
+
+    .marquee-static-text {
+      color: rgba(243, 243, 242, 0.5); /* text-foreground/50 */
+      font-size: 14px; /* text-sm */
+      line-height: 1.4;
+      flex-shrink: 0;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .marquee-scroll-window {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+    }
+
+    .marquee-track {
+      display: flex;
+      align-items: center;
+      gap: 64px; /* gap-16 between logos */
+      width: max-content;
+      animation: marqueeScroll 20s linear infinite;
+    }
+
+    @keyframes marqueeScroll {
+      0% {
+        transform: translateX(0%);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .marquee-logo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+
+    .marquee-glass-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px; /* rounded-lg */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-headline);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-fg);
+      flex-shrink: 0;
+    }
+
+    .marquee-logo-name {
+      font-size: 16px; /* text-base */
+      font-weight: 600; /* font-semibold */
+      color: var(--color-fg); /* text-foreground */
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      .navbar { padding: 16px 20px; }
+      .navbar-center-links { display: none; }
+      .navbar-auth-group { display: none; }
+      .navbar-burger { display: flex; }
+      .marquee-bottom-container { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .wizard-glass-card { padding: 20px 16px; }
+      .step-tracker-bar { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Index Page Wrapper with Background Video -->
+  <div class="video-hero-wrapper">
+    <!-- Looping Background Video with JS-controlled fade loop -->
+    <video id="bgVideo" muted playsinline preload="auto">
+      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4" type="video/mp4">
+    </video>
+
+    <!-- Blurred overlay shape centered behind content -->
+    <div class="blurred-overlay-shape"></div>
+
+    <!-- Relative z-10 hero content layer -->
+    <div class="hero-content-layer">
+      <!-- ══════════════════════════════════════════════════════
+           1. NAVBAR (已全面与系统大厅与工作台同步)
+           ══════════════════════════════════════════════════════ -->
+      <nav class="navbar">
+        <a href="/portal" class="navbar-left" title="返回服务大厅">
+          <div class="navbar-logo-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="#ffffff" stroke-width="2.5" />
+              <circle cx="12" cy="12" r="4" fill="#ffffff" />
+            </svg>
+          </div>
+          <span class="navbar-brand-name">Quantum<sup>2</sup> 智修云</span>
+        </a>
+
+        <!-- 中心业务导航链接（与 base.html 角色路由全面同步） -->
+        <div class="navbar-center-links">
+          {% if not (current_user and current_user.is_authenticated) %}
+            <a href="/portal" class="nav-btn">服务大厅</a>
+            <a href="/safety" class="nav-btn">安全合规</a>
+            <a href="/recruit" class="nav-btn">师傅招募</a>
+            <a href="/ai-assistant" class="nav-btn active">AI智能助手</a>
+          {% else %}
+            <a href="/portal" class="nav-btn" style="color: #38c6ec; font-weight: 700;">🏠 服务大厅</a>
+            {% if current_user.role == 'customer' %}
+              <a href="/ai-assistant" class="nav-btn active">🤖 AI智能助手</a>
+              <a href="/query" class="nav-btn">📋 我的工单</a>
+              <a href="/customers" class="nav-btn">📱 我的设备</a>
+            {% elif current_user.role == 'technician' %}
+              <a href="/tech" class="nav-btn">⚡ 师傅工作台</a>
+              <a href="/query" class="nav-btn">🔍 工单查询</a>
+              <a href="/ai-assistant" class="nav-btn active">🤖 AI智能助手</a>
+            {% elif current_user.role == 'dispatcher' %}
+              <a href="/" class="nav-btn">调度看板</a>
+              <a href="/customers" class="nav-btn">客户设备</a>
+              <a href="/parts" class="nav-btn">字典与价目</a>
+              <a href="/reports" class="nav-btn">管理报表</a>
+              <a href="/ai-assistant" class="nav-btn active">🤖 AI智能助手</a>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <!-- 右侧登录与个人信息区 -->
+        <div class="navbar-auth-group">
+          {% if current_user and current_user.is_authenticated %}
+            {% if current_user.role == 'dispatcher' %}
+              <a href="/" class="heroSecondary-btn" title="进入调度看板">{{ current_user.name or current_user.username }} (调度看板)</a>
+            {% elif current_user.role == 'technician' %}
+              <a href="/tech" class="heroSecondary-btn" title="进入师傅工作台">{{ current_user.name or current_user.username }} (师傅工作台)</a>
+            {% else %}
+              <a href="/query" class="heroSecondary-btn" title="查看我的工单进度">{{ current_user.name or current_user.username }} (我的工单)</a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="nav-logout-btn" title="退出登录">退出</a>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="heroSecondary-btn">登录 / 注册</a>
+          {% endif %}
+        </div>
+
+        <!-- 移动端汉堡切换按钮 -->
+        <button class="navbar-burger" type="button" aria-label="展开导航菜单" onclick="toggleAssistantMobileNav()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <!-- 移动端抽屉 -->
+        <div class="mobile-nav-drawer" id="assistantMobileDrawer">
+          {% if not (current_user and current_user.is_authenticated) %}
+            <a href="/portal" class="mobile-drawer-link">服务大厅</a>
+            <a href="/safety" class="mobile-drawer-link">安全合规</a>
+            <a href="/recruit" class="mobile-drawer-link">师傅招募</a>
+            <a href="/ai-assistant" class="mobile-drawer-link active">🤖 AI智能助手</a>
+            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
+            <a href="{{ url_for('auth.login') }}" class="heroSecondary-btn" style="text-align: center; width: 100%;">登录 / 注册</a>
+          {% else %}
+            <a href="/portal" class="mobile-drawer-link" style="color: #38c6ec; font-weight: 700;">🏠 服务大厅</a>
+            {% if current_user.role == 'customer' %}
+              <a href="/ai-assistant" class="mobile-drawer-link active">🤖 AI智能助手</a>
+              <a href="/query" class="mobile-drawer-link">📋 我的工单</a>
+              <a href="/customers" class="mobile-drawer-link">📱 我的设备</a>
+            {% elif current_user.role == 'technician' %}
+              <a href="/tech" class="mobile-drawer-link">⚡ 师傅工作台</a>
+              <a href="/query" class="mobile-drawer-link">🔍 工单查询</a>
+              <a href="/ai-assistant" class="mobile-drawer-link active">🤖 AI智能助手</a>
+            {% elif current_user.role == 'dispatcher' %}
+              <a href="/" class="mobile-drawer-link">调度看板</a>
+              <a href="/customers" class="mobile-drawer-link">客户设备</a>
+              <a href="/parts" class="mobile-drawer-link">字典与价目</a>
+              <a href="/reports" class="mobile-drawer-link">管理报表</a>
+              <a href="/ai-assistant" class="mobile-drawer-link active">🤖 AI智能助手</a>
+            {% endif %}
+            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px;">
+              <span style="font-size: 13.5px; color: #fff;">{{ current_user.name or current_user.username }}</span>
+              <a href="{{ url_for('auth.logout') }}" style="color: #ef4444; font-size: 13px; text-decoration: none;">退出登录</a>
+            </div>
+          {% endif %}
+        </div>
+      </nav>
+      <div class="navbar-divider"></div>
+
+      <!-- ══════════════════════════════════════════════════════
+           2. HERO CONTENT (VERTICALLY CENTERED VIA flex-1)
+           ══════════════════════════════════════════════════════ -->
+      <div class="hero-center-box">
+        <h1 class="hero-headline">
+          Power <span class="hero-headline-ai">AI</span>
+        </h1>
+        <p class="hero-subtitle">
+          The most powerful AI ever deployed / in talent acquisition
+        </p>
+
+        <button type="button" class="hero-cta-btn" onclick="scrollToWizard()">
+          <span>Schedule a Consult</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           3. AI 智能报修分步跳转式向导 (LIQUID GLASS 微拟态大卡)
+           ══════════════════════════════════════════════════════ -->
+      <div class="wizard-drawer-section" id="wizard-anchor">
+        <div class="liquid-glass wizard-glass-card">
+          <!-- 步骤进度指示 -->
+          <div class="step-tracker-bar">
+            <div class="tracker-item active" id="track-1" onclick="jumpToStep(1)">
+              <div class="tracker-circle">1</div>
+              <span>维修家电</span>
+            </div>
+            <div class="tracker-line" id="line-1"></div>
+            <div class="tracker-item" id="track-2" onclick="jumpToStep(2)">
+              <div class="tracker-circle">2</div>
+              <span>故障现象</span>
+            </div>
+            <div class="tracker-line" id="line-2"></div>
+            <div class="tracker-item" id="track-3" onclick="jumpToStep(3)">
+              <div class="tracker-circle">3</div>
+              <span>预约时间</span>
+            </div>
+            <div class="tracker-line" id="line-3"></div>
+            <div class="tracker-item" id="track-4" onclick="jumpToStep(4)">
+              <div class="tracker-circle">4</div>
+              <span>确认地址</span>
+            </div>
+            <div class="tracker-line" id="line-4"></div>
+            <div class="tracker-item" id="track-5" title="确认前4步后跳转至独立第5步接单大厅">
+              <div class="tracker-circle" style="background: rgba(168, 85, 247, 0.2); color: #a855f7;">5</div>
+              <span style="color: #a855f7;">挑选师傅 ➔</span>
+            </div>
+          </div>
+
+          <!-- 自然语言一句话极速填单 -->
+          <div class="nlp-speed-box">
+            <span style="font-size: 18px;">✨</span>
+            <input type="text" id="aiNlpInput" class="nlp-input" 
+                   placeholder="AI 智能引导报修系统：例如 海尔空调不制冷，明天下午在朝阳区修，电话13800138000" />
+            <button type="button" class="nlp-submit-btn" onclick="executeNlpParse()">一键智能解析</button>
+          </div>
+
+          <!-- 主表单：收集 1~4 步数据，下一步直接 POST 到独立第 5 步页面 /orders/pick-technician -->
+          <form id="aiRepairForm" action="/orders/pick-technician" method="POST">
+            <input type="hidden" name="customer_id" id="hidden_customer_id" value="{{ current_cust.id if current_cust else '' }}" />
+            <input type="hidden" name="category" id="hidden_category" value="空调" />
+            <input type="hidden" name="device_id" id="hidden_device_id" value="" />
+            <input type="hidden" name="fault_tags" id="hidden_fault_tags" value="" />
+            <input type="hidden" name="appointment_date" id="hidden_app_date" value="" />
+            <input type="hidden" name="appointment_slot" id="hidden_app_slot" value="下午 (14:00 - 18:00)" />
+
+            <!-- ── Step 1: 维修什么家电 ── -->
+            <div class="step-pane active" id="pane-1">
+              <div class="pane-h2">1. 您需要维修什么家电？</div>
+              <div class="pane-desc">点击对应分类胶囊，或输入具体型号以便备齐原厂备件</div>
+
+              <div class="appliance-grid">
+                <div class="appliance-tile selected" onclick="selectAppliance('空调')">
+                  <div class="appliance-icon">❄️</div>
+                  <div class="appliance-title">空调</div>
+                </div>
+                <div class="appliance-tile" onclick="selectAppliance('冰箱')">
+                  <div class="appliance-icon">🧊</div>
+                  <div class="appliance-title">冰箱</div>
+                </div>
+                <div class="appliance-tile" onclick="selectAppliance('洗衣机')">
+                  <div class="appliance-icon">🌀</div>
+                  <div class="appliance-title">洗衣机</div>
+                </div>
+                <div class="appliance-tile" onclick="selectAppliance('热水器')">
+                  <div class="appliance-icon">🔥</div>
+                  <div class="appliance-title">热水器</div>
+                </div>
+                <div class="appliance-tile" onclick="selectAppliance('油烟机')">
+                  <div class="appliance-icon">💨</div>
+                  <div class="appliance-title">抽油烟机</div>
+                </div>
+                <div class="appliance-tile" onclick="selectAppliance('燃气灶')">
+                  <div class="appliance-icon">🍳</div>
+                  <div class="appliance-title">燃气灶</div>
+                </div>
+                <div class="appliance-tile" onclick="selectAppliance('电视机')">
+                  <div class="appliance-icon">📺</div>
+                  <div class="appliance-title">电视机</div>
+                </div>
+                <div class="appliance-tile" onclick="selectAppliance('洗碗机')">
+                  <div class="appliance-icon">🍽️</div>
+                  <div class="appliance-title">洗碗机</div>
+                </div>
+              </div>
+
+              <!-- 若已有绑定设备 -->
+              {% if devices and devices|length > 0 %}
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;">
+                <div style="font-size: 12px; color: var(--color-sub); margin-bottom: 6px;">📱 您已绑定的设备：</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  {% for d in devices %}
+                  <div class="symptom-chip-btn" onclick="selectMyDevice('{{ d.id }}', '{{ d.model }}')">{{ d.model }}</div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+
+              <div style="margin-top: 12px;">
+                <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
+                  品牌及型号（选填，如：格力 1.5匹变频冷暖挂机）
+                </label>
+                <input type="text" name="new_device_model" id="new_device_model" class="glass-input" 
+                       placeholder="填写具体型号有助于师傅提前备妥备件" />
+              </div>
+
+              <div class="step-actions">
+                <div></div>
+                <button type="button" class="btn-step-next" onclick="nextStep(2)">
+                  下一步：选择故障类型 ➔
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Step 2: 大概遇到了什么故障 ── -->
+            <div class="step-pane" id="pane-2">
+              <div class="pane-h2">2. 大概遇到了什么故障？</div>
+              <div class="pane-desc">点击匹配的常见现象，或在下方输入补充细节（选填）</div>
+
+              <div class="chip-container">
+                <div class="symptom-chip-btn" onclick="toggleSymptom(this, '不通电/开不了机')">⚡ 不通电/开不了机</div>
+                <div class="symptom-chip-btn" onclick="toggleSymptom(this, '制冷/制热不良')">❄️ 制冷/制热不良</div>
+                <div class="symptom-chip-btn" onclick="toggleSymptom(this, '漏水/滴水渗水')">💧 漏水/滴水渗漏</div>
+                <div class="symptom-chip-btn" onclick="toggleSymptom(this, '运转噪音巨大/异响')">🔊 运转噪音巨大/异响</div>
+                <div class="symptom-chip-btn" onclick="toggleSymptom(this, '频繁跳闸短路')">⚠️ 频繁跳闸短路</div>
+                <div class="symptom-chip-btn" onclick="toggleSymptom(this, '按键/遥控无反应')">📱 按键/遥控无反应</div>
+                <div class="symptom-chip-btn" onclick="toggleSymptom(this, '有焦糊味/发热异常')">🔥 有焦糊味/异常发热</div>
+                <div class="symptom-chip-btn" onclick="toggleSymptom(this, '脱水不转/震动剧烈')">🌀 脱水不转/震动剧烈</div>
+              </div>
+
+              <div style="margin-top: 14px;">
+                <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
+                  补充详细故障细节（选填）
+                </label>
+                <textarea name="description" id="description" rows="3" class="glass-input" 
+                          placeholder="例如：运转约10分钟后自动断电，伴随滴滴三声警报..."></textarea>
+              </div>
+
+              <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 10px; padding: 12px 16px; margin-top: 16px; font-size: 13px; color: #e9d5ff; display: flex; align-items: flex-start; gap: 8px;">
+                <span>💡</span>
+                <span id="aiAdviceText">系统将根据您选定的品类与故障，提前为上门技师匹配专用排查工具与常见消耗配件，上门排查费 ¥30 全程由平台托管，未上门全额退款。</span>
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn-step-prev" onclick="prevStep(1)">
+                  ⬅️ 返回上一步
+                </button>
+                <button type="button" class="btn-step-next" onclick="nextStep(3)">
+                  下一步：选择预约时间 ➔
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Step 3: 上门维修时间的选择 ── -->
+            <div class="step-pane" id="pane-3">
+              <div class="pane-h2">3. 师傅何时上门维修合适？</div>
+              <div class="pane-desc">选择方便的上门日期及服务时段</div>
+
+              <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">期望服务日期</label>
+              <div class="date-row" id="dateRowContainer"></div>
+
+              <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 12px; color: rgba(243,243,242,0.4); margin-bottom: 4px;">或指定具体日期：</label>
+                <input type="date" id="custom_date" class="glass-input" style="max-width: 240px;" onchange="onCustomDate(this.value)" />
+              </div>
+
+              <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">期望服务时段</label>
+              <div class="slot-grid">
+                <div class="slot-tile" onclick="selectSlot('上午 (09:00 - 12:00)', this)">☀️ 上午 (09:00 - 12:00)</div>
+                <div class="slot-tile selected" onclick="selectSlot('下午 (14:00 - 18:00)', this)">⛅ 下午 (14:00 - 18:00)</div>
+                <div class="slot-tile" onclick="selectSlot('夜间急修 (18:00 - 21:00)', this)">🌙 夜间急修 (18:00 - 21:00)</div>
+                <div class="slot-tile" onclick="selectSlot('全天随时均可', this)">⚡ 全天随时均可</div>
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn-step-prev" onclick="prevStep(2)">
+                  ⬅️ 返回上一步
+                </button>
+                <button type="button" class="btn-step-next" onclick="nextStep(4)">
+                  下一步：确认地址和电话 ➔
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Step 4: 确认上门地址和电话 ── -->
+            <div class="step-pane" id="pane-4">
+              <div class="pane-h2">4. 确认您的上门地址与联系电话</div>
+              <div class="pane-desc">若个人基本信息已有默认信息，系统已自动载入，核对无误后直达挑选师傅新界面</div>
+
+              {% if current_cust and current_cust.address and current_cust.phone %}
+              <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #6ee7b7;">
+                ✅ <strong>已自动读取默认客户信息：</strong>{{ current_cust.name }} · {{ current_cust.phone }} · {{ current_cust.address }}
+              </div>
+              {% endif %}
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                <div>
+                  <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
+                    联系人姓名 <span style="color: #ef4444;">*</span>
+                  </label>
+                  <input type="text" name="contact_name" id="contact_name" class="glass-input" 
+                         value="{{ current_cust.name if current_cust else '' }}" placeholder="如：张先生 / 李女士" required />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
+                    联系手机号码 <span style="color: #ef4444;">*</span>
+                  </label>
+                  <input type="tel" name="contact_phone" id="contact_phone" class="glass-input" 
+                         value="{{ current_cust.phone if current_cust else '' }}" placeholder="师傅上门前将拨打此号码" maxlength="11" required />
+                </div>
+              </div>
+
+              <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
+                  详细上门服务地址 <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" name="service_address" id="service_address" class="glass-input" 
+                       value="{{ current_cust.address if current_cust else '' }}" placeholder="如：北京市朝阳区北苑家园望春园3号楼2单元601" required />
+              </div>
+
+              <div style="background: rgba(99, 102, 241, 0.1); border: 1px dashed rgba(99, 102, 241, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #c7d2fe;">
+                🚀 <strong>下一步跳转：</strong>点击下方按钮将为您<strong>跳转至全新的【第 5 步：附近在线师傅撮合大厅】</strong>，开启全城 LBS 抢单雷达并供您自由挑选在线金牌工匠！
+              </div>
+
+              <div class="step-actions">
+                <button type="button" class="btn-step-prev" onclick="prevStep(3)">
+                  ⬅️ 返回上一步
+                </button>
+                <button type="button" class="btn-step-next" onclick="submitToPickTech()">
+                  下一步：挑选附近师傅 (跳转新界面) ➔
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           4. LOGO MARQUEE (PINNED TO BOTTOM OF HERO, pb-10)
+           ══════════════════════════════════════════════════════ -->
+      <div class="marquee-bottom-container">
+        <div class="marquee-static-text">
+          Relied on by brands<br>across the globe
+        </div>
+
+        <div class="marquee-scroll-window">
+          <div class="marquee-track">
+            <!-- Set 1: Vortex, Nimbus, Prysma, Cirrus, Kynder, Halcyn -->
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">V</div>
+              <span class="marquee-logo-name">Vortex</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">N</div>
+              <span class="marquee-logo-name">Nimbus</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">P</div>
+              <span class="marquee-logo-name">Prysma</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">C</div>
+              <span class="marquee-logo-name">Cirrus</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">K</div>
+              <span class="marquee-logo-name">Kynder</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">H</div>
+              <span class="marquee-logo-name">Halcyn</span>
+            </div>
+
+            <!-- Set 2: Duplicated for seamless 20s infinite loop -->
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">V</div>
+              <span class="marquee-logo-name">Vortex</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">N</div>
+              <span class="marquee-logo-name">Nimbus</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">P</div>
+              <span class="marquee-logo-name">Prysma</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">C</div>
+              <span class="marquee-logo-name">Cirrus</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">K</div>
+              <span class="marquee-logo-name">Kynder</span>
+            </div>
+            <div class="marquee-logo-item">
+              <div class="liquid-glass marquee-glass-icon">H</div>
+              <span class="marquee-logo-name">Halcyn</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       JS SCRIPT: VIDEO FADE LOOP & WIZARD INTERACTION
+       0.5s fade-in at start, 0.5s fade-out at end via requestAnimationFrame.
+       On ended, opacity resets to 0, waits 100ms, then replays from 0.
+       ══════════════════════════════════════════════════════════ -->
+  <script>
+    // 1. Custom JS-controlled video fade loop
+    const video = document.getElementById('bgVideo');
+    const FADE_DURATION = 0.5; // seconds
+
+    function checkVideoFade() {
+      if (!video.duration || isNaN(video.duration)) {
+        requestAnimationFrame(checkVideoFade);
+        return;
+      }
+
+      const curr = video.currentTime;
+      const dur = video.duration;
+
+      // 0.5s fade-in at start
+      if (curr < FADE_DURATION) {
+        video.style.opacity = (curr / FADE_DURATION).toFixed(3);
+      } 
+      // 0.5s fade-out at end
+      else if (dur - curr < FADE_DURATION) {
+        const remaining = dur - curr;
+        video.style.opacity = Math.max(0, (remaining / FADE_DURATION)).toFixed(3);
+      } 
+      // Fully visible in middle
+      else {
+        video.style.opacity = '1';
+      }
+
+      requestAnimationFrame(checkVideoFade);
+    }
+
+    video.addEventListener('ended', () => {
+      video.style.opacity = '0';
+      setTimeout(() => {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }, 100);
+    });
+
+    // Start video playback safely
+    video.play().then(() => {
+      requestAnimationFrame(checkVideoFade);
+    }).catch(() => {
+      // Autoplay with muted fallback
+      video.muted = true;
+      video.play().then(() => {
+        requestAnimationFrame(checkVideoFade);
+      });
+    });
+
+    // 2. Wizard interactions
+    let currentStep = 1;
+    let selectedCategory = '空调';
+    let selectedSymptoms = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initDateRow();
+    });
+
+    function scrollToWizard() {
+      document.getElementById('wizard-anchor').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function initDateRow() {
+      const container = document.getElementById('dateRowContainer');
+      const today = new Date();
+      const days = ['今天 (急修极速)', '明天', '后天', '大后天'];
+      container.innerHTML = '';
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const iso = d.toISOString().split('T')[0];
+        const monthDay = `${d.getMonth() + 1}月${d.getDate()}日`;
+
+        const tag = document.createElement('div');
+        tag.className = `date-tag ${i === 1 ? 'selected' : ''}`;
+        tag.innerHTML = `${days[i]} <span style="font-size: 11px; opacity: 0.8;">(${monthDay})</span>`;
+        tag.onclick = () => {
+          document.querySelectorAll('.date-tag').forEach(b => b.classList.remove('selected'));
+          tag.classList.add('selected');
+          document.getElementById('hidden_app_date').value = iso;
+          document.getElementById('custom_date').value = '';
+        };
+        container.appendChild(tag);
+
+        if (i === 1) {
+          document.getElementById('hidden_app_date').value = iso;
+        }
+      }
+    }
+
+    function onCustomDate(val) {
+      if (val) {
+        document.querySelectorAll('.date-tag').forEach(b => b.classList.remove('selected'));
+        document.getElementById('hidden_app_date').value = val;
+      }
+    }
+
+    function selectSlot(slotText, el) {
+      document.querySelectorAll('.slot-tile').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('hidden_app_slot').value = slotText;
+    }
+
+    function selectAppliance(catName) {
+      selectedCategory = catName;
+      document.getElementById('hidden_category').value = catName;
+      document.querySelectorAll('.appliance-tile').forEach(b => {
+        b.classList.remove('selected');
+        if (b.innerText.includes(catName)) {
+          b.classList.add('selected');
+        }
+      });
+      updateDiagText();
+    }
+
+    function selectMyDevice(devId, devModel) {
+      document.getElementById('hidden_device_id').value = devId;
+      document.getElementById('new_device_model').value = devModel;
+      alert(`已选用已有设备：${devModel}`);
+    }
+
+    function toggleSymptom(el, text) {
+      el.classList.toggle('selected');
+      if (el.classList.contains('selected')) {
+        if (!selectedSymptoms.includes(text)) selectedSymptoms.push(text);
+      } else {
+        selectedSymptoms = selectedSymptoms.filter(t => t !== text);
+      }
+      document.getElementById('hidden_fault_tags').value = selectedSymptoms.join('、');
+      updateDiagText();
+    }
+
+    function updateDiagText() {
+      const el = document.getElementById('aiAdviceText');
+      if (!el) return;
+      const tags = selectedSymptoms.join('、') || '常规故障';
+      el.innerText = `系统已为您建立【${selectedCategory} - ${tags}】诊断档案，上门师傅将依此提前备齐专用检测工具与备件，现场出示专属 6 位核销码才结算排查费。`;
+    }
+
+    function jumpToStep(target) {
+      if (target > currentStep) {
+        if (!validateStep(currentStep)) return;
+      }
+      showStep(target);
+    }
+
+    function nextStep(target) {
+      if (!validateStep(currentStep)) return;
+      showStep(target);
+    }
+
+    function prevStep(target) {
+      showStep(target);
+    }
+
+    function showStep(stepNum) {
+      currentStep = stepNum;
+      document.querySelectorAll('.step-pane').forEach((p, idx) => {
+        p.classList.toggle('active', (idx + 1) === stepNum);
+      });
+
+      for (let i = 1; i <= 4; i++) {
+        const item = document.getElementById(`track-${i}`);
+        const line = document.getElementById(`line-${i}`);
+        if (item) {
+          item.classList.remove('active', 'completed');
+          if (i === stepNum) item.classList.add('active');
+          else if (i < stepNum) item.classList.add('completed');
+        }
+        if (line) {
+          line.classList.toggle('completed', i < stepNum);
+        }
+      }
+    }
+
+    function validateStep(step) {
+      if (step === 4) {
+        const name = document.getElementById('contact_name').value.trim();
+        const phone = document.getElementById('contact_phone').value.trim();
+        const addr = document.getElementById('service_address').value.trim();
+        if (!name) {
+          alert('请填写联系人姓名');
+          document.getElementById('contact_name').focus();
+          return false;
+        }
+        if (!phone || phone.length !== 11 || !phone.startsWith('1')) {
+          alert('请填写正确的11位联系手机号码');
+          document.getElementById('contact_phone').focus();
+          return false;
+        }
+        if (!addr) {
+          alert('请填写详细上门服务地址');
+          document.getElementById('service_address').focus();
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function submitToPickTech() {
+      if (!validateStep(4)) return;
+      document.getElementById('aiRepairForm').submit();
+    }
+
+    function executeNlpParse() {
+      const text = document.getElementById('aiNlpInput').value.trim();
+      if (!text) {
+        alert('请输入报修描述，如：海尔空调不制冷，明天下午在朝阳区修，电话13800000000');
+        return;
+      }
+      const cats = ['空调', '冰箱', '洗衣机', '热水器', '抽油烟机', '油烟机', '燃气灶', '电视机', '洗碗机'];
+      for (const c of cats) {
+        if (text.includes(c)) {
+          selectAppliance(c === '油烟机' ? '抽油烟机' : c);
+          break;
+        }
+      }
+      const phoneMatch = text.match(/1[3-9]\d{9}/);
+      if (phoneMatch) {
+        document.getElementById('contact_phone').value = phoneMatch[0];
+      }
+      if (text.includes('今天')) {
+        document.querySelectorAll('.date-tag')[0]?.click();
+      } else if (text.includes('明天')) {
+        document.querySelectorAll('.date-tag')[1]?.click();
+      } else if (text.includes('后天')) {
+        document.querySelectorAll('.date-tag')[2]?.click();
+      }
+      document.getElementById('description').value = text;
+      alert('✨ AI 智能解析完成！已为您自动识别家电品类与预约时段，请点击【下一步】继续。');
+    }
+
+    function toggleAssistantMobileNav() {
+      const drawer = document.getElementById('assistantMobileDrawer');
+      if (drawer) {
+        drawer.classList.toggle('open');
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      const drawer = document.getElementById('assistantMobileDrawer');
+      const burger = document.querySelector('.navbar-burger');
+      if (drawer && drawer.classList.contains('open')) {
+        if (!drawer.contains(e.target) && !burger.contains(e.target)) {
+          drawer.classList.remove('open');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

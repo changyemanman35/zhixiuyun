@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fastshot — Describe an app. We'll build it.</title>
+  <meta name="description" content="Fastshot turns a written description into a working app.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=block" rel="stylesheet">
+
+  <script>
+    document.documentElement.classList.add('anim');
+  </script>
+
+  <style>
+    /* ── RESET & BASE ── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: #0a0d12;
+      font-synthesis: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
+    }
+    button, input, textarea {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+    }
+    img, svg {
+      display: block;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    :focus-visible {
+      outline: 2px solid #F8B285;
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    /* ── CSS VARIABLES ── */
+    :root {
+      --u: min(0.06410256vw, 0.12400794vh);
+      --vu: 0.09920635vh;
+      --inset-top: 41;
+      --inset-bottom: 106;
+
+      --font-text: Inter, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-display: Inter, var(--font-text);
+
+      /* Nav */
+      --brand-x: 225;
+      --brand-y: 45;
+      --mark: 34;
+      --brand-gap: 12;
+      --brand-fs: 18.49;
+      --links-y: 50.5;
+      --links-gap: 50;
+      --links-fs: 21.69;
+      --cta-x: 1195;
+      --cta-y: 42;
+      --cta-w: 140;
+      --cta-h: 43;
+      --cta-r: 12;
+      --cta-fs: 15.70;
+      --cta-dy: 2;
+
+      /* Hero */
+      --hero-gap: 51;
+      --h1-y: 323;
+      --h1-fs: 36.25;
+      --display-ls: 0.0018em;
+      --nav-ls: -0.0115em;
+      --brand-ls: -0.0154em;
+      --cta-ls: -0.0127em;
+      --body-ls: 0.007em;
+      --label-ls: normal;
+      --model-ls: normal;
+      --proof-ls: 0.0065em;
+
+      --w-regular: 400;
+      --w-display-wght: 410;
+      --w-medium: 500;
+      --w-semibold: 600;
+      --w-display: var(--w-display-wght);
+      --w-nav: 400;
+      --w-brand: 500;
+      --w-cta: 520;
+      --w-body: var(--w-regular);
+      --w-label: var(--w-medium);
+      --w-model: var(--w-regular);
+      --w-proof: 480;
+
+      /* Composer */
+      --card-x: 425;
+      --card-y: 413;
+      --card-w: 708;
+      --card-h: 143;
+      --card-r: 26;
+      --ph-x: 452;
+      --ph-y: 446;
+      --ph-fs: 9.97;
+      --chips-x: 444;
+      --chips-y: 505;
+      --chip-h: 30;
+      --chip-r: 9;
+      --chip-fs: 9.0;
+      --chip-gap: 5.5;
+      --son-fs: 10.4;
+      --son-top: 15.5;
+      --chev-gap: 6.2;
+      --chev-x: 1013.5;
+      --chev-y: 522.3;
+      --att-x: 1043.2;
+      --att-y: 515.1;
+      --send-x: 1084;
+      --send-y: 507;
+      --send-d: 35;
+
+      /* Footer */
+      --by-y: 799;
+      --by-fs: 14.01;
+      --logo-y: 867;
+      --logo-gap: 62;
+
+      /* Easing */
+      --e-primary: cubic-bezier(.16, 1, .3, 1);
+      --e-soft: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    @supports (height: 100dvh) {
+      :root {
+        --u: min(0.06410256vw, 0.12400794dvh);
+        --vu: 0.09920635dvh;
+      }
+    }
+
+    @media (min-width: 1561px) {
+      :root {
+        --inset-top: 27;
+        --inset-bottom: 74;
+      }
+    }
+
+    /* ── STAGE & FRAME ── */
+    .stage {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: #0a0d12;
+    }
+    .stage-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+    .frame {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      padding: calc(var(--inset-top) * var(--vu)) calc(225 * var(--u)) calc(var(--inset-bottom) * var(--vu));
+    }
+
+    /* ── NAV ── */
+    header.nav {
+      height: calc(43 * var(--u));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--brand-gap) * var(--u));
+      text-decoration: none;
+    }
+    .mark {
+      width: calc(var(--mark) * var(--u));
+      height: calc(var(--mark) * var(--u));
+    }
+    .wordmark {
+      font-family: var(--font-display);
+      font-size: calc(var(--brand-fs) * var(--u));
+      font-weight: var(--w-brand);
+      letter-spacing: var(--brand-ls);
+      color: #ffffff;
+      transform: translateY(calc(1 * var(--u)));
+      font-variation-settings: "opsz" 32;
+      text-shadow: 0 calc(1 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, .30);
+    }
+
+    /* NAV CENTER (absolutely centered) */
+    .links {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: calc((50.5 - 41) * var(--u));
+      display: flex;
+      align-items: center;
+      gap: calc(var(--links-gap) * var(--u));
+    }
+    .links a {
+      font-family: var(--font-text);
+      font-size: calc(var(--links-fs) * var(--u));
+      font-weight: var(--w-nav);
+      letter-spacing: var(--nav-ls);
+      line-height: 1.2;
+      color: #ffffff;
+      text-shadow: 0 calc(1 * var(--u)) calc(12 * var(--u)) rgba(0, 0, 0, .32);
+      transition: opacity .18s ease;
+    }
+    .links a:hover {
+      opacity: .72;
+    }
+
+    /* NAV RIGHT CTA */
+    .nav .cta {
+      width: calc(var(--cta-w) * var(--u));
+      height: calc(var(--cta-h) * var(--u));
+      border-radius: calc(var(--cta-r) * var(--u));
+      font-family: var(--font-text);
+      font-size: calc(var(--cta-fs) * var(--u));
+      font-weight: var(--w-cta);
+      letter-spacing: var(--cta-ls);
+      color: #ffffff;
+      align-self: flex-start;
+      margin-top: calc((42 - 41) * var(--u));
+      background: linear-gradient(180deg, #3d3d3f 0%, #1d1d20 100%);
+      box-shadow: inset 0 calc(1 * var(--u)) 0 rgba(255, 255, 255, .10), 0 calc(2 * var(--u)) calc(14 * var(--u)) rgba(0, 0, 0, .28);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: filter .18s ease, transform .12s ease;
+    }
+    .nav .cta span {
+      transform: translateY(calc(var(--cta-dy) * var(--u)));
+    }
+    .nav .cta:hover {
+      filter: brightness(1.16);
+    }
+    .nav .cta:active {
+      transform: translateY(1px);
+    }
+
+    /* MOBILE BURGER & SHEET */
+    .burger, .sheet {
+      display: none;
+    }
+
+    /* ── HERO MAIN ── */
+    main.hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: calc(var(--hero-gap) * var(--vu));
+      padding-bottom: calc(4 * var(--vu));
+    }
+
+    .h1 {
+      font-family: var(--font-display);
+      font-size: calc(var(--h1-fs) * var(--u));
+      font-weight: var(--w-display);
+      line-height: 1.10;
+      letter-spacing: var(--display-ls);
+      color: #ffffff;
+      font-variation-settings: "opsz" 32;
+      text-shadow: 0 calc(2 * var(--u)) calc(22 * var(--u)) rgba(0, 0, 0, .30);
+      text-align: center;
+    }
+
+    /* ── COMPOSER CARD ── */
+    .card {
+      width: calc(var(--card-w) * var(--u));
+      height: calc(var(--card-h) * var(--u));
+      border-radius: calc(var(--card-r) * var(--u));
+      margin-right: calc(3 * var(--u));
+      background: rgba(41, 41, 43, .955);
+      backdrop-filter: blur(calc(26 * var(--u))) saturate(112%);
+      -webkit-backdrop-filter: blur(calc(26 * var(--u))) saturate(112%);
+      box-shadow: inset 0 0 0 1px rgba(214, 228, 255, .14), 0 calc(22 * var(--u)) calc(60 * var(--u)) rgba(0, 0, 0, .30);
+      position: relative;
+    }
+
+    .ph {
+      position: absolute;
+      left: calc((452 - 425) * var(--u));
+      top: calc((446 - 413) * var(--u));
+      right: calc(24 * var(--u));
+      color: #8B8C8E;
+      font-family: var(--font-text);
+      font-size: calc(var(--ph-fs) * var(--u));
+      font-weight: var(--w-regular);
+      line-height: 1.35;
+      letter-spacing: var(--body-ls);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+
+    .tools {
+      position: absolute;
+      left: calc(19 * var(--u));
+      top: calc(92 * var(--u));
+      height: calc(30 * var(--u));
+      right: calc((425 + 708 - 1134) * var(--u));
+    }
+
+    .chips {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--chip-gap) * var(--u));
+      height: 100%;
+    }
+
+    .chip {
+      height: calc(var(--chip-h) * var(--u));
+      border-radius: calc(var(--chip-r) * var(--u));
+      font-family: var(--font-text);
+      font-size: calc(var(--chip-fs) * var(--u));
+      font-weight: var(--w-medium);
+      color: #909093;
+      line-height: 1;
+      background: linear-gradient(180deg, rgba(255, 255, 255, .088) 0%, rgba(255, 255, 255, .050) 45%, rgba(255, 255, 255, .038) 100%);
+      border: 1px solid rgba(255, 255, 255, .05);
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      transition: all .15s ease;
+      width: calc(var(--cw) * var(--u));
+      padding-left: calc(var(--pl) * var(--u));
+      gap: calc(var(--ig) * var(--u));
+    }
+    .chip:hover {
+      background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .07));
+      color: #c8c8cb;
+    }
+    .chip span {
+      transform: translateY(calc(2 * var(--u)));
+      white-space: nowrap;
+    }
+
+    /* RIGHT CLUSTER (.right) */
+    .right {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .right > * {
+      position: absolute;
+      pointer-events: auto;
+    }
+
+    .model {
+      left: calc(510.2 * var(--u));
+      top: calc(15.5 * var(--u));
+      font-family: var(--font-text);
+      font-size: calc(var(--son-fs) * var(--u));
+      font-weight: var(--w-regular);
+      color: #98999C;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: calc(var(--chev-gap) * var(--u));
+      cursor: default;
+      user-select: none;
+    }
+    .model .chev {
+      width: calc(6.8 * var(--u));
+    }
+
+    .attach {
+      left: calc(599.15 * var(--u));
+      top: calc(10.14 * var(--u));
+      color: #A9AAAD;
+      cursor: pointer;
+      transition: color .15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .attach:hover {
+      color: #ffffff;
+    }
+    .attach svg {
+      width: calc(19.79 * var(--u));
+      height: calc(19.79 * var(--u));
+    }
+
+    .send {
+      left: calc(var(--send-x) * var(--u));
+      top: calc(2 * var(--u));
+      width: calc(var(--send-d) * var(--u));
+      height: calc(var(--send-d) * var(--u));
+      border-radius: 50%;
+      background: linear-gradient(163deg, #FBBC94 0%, #F49D70 46%, #E88654 100%);
+      box-shadow: 0 calc(3 * var(--u)) calc(12 * var(--u)) rgba(210, 110, 60, .34);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: filter .15s ease, transform .15s ease;
+    }
+    .send:hover {
+      filter: brightness(1.07);
+    }
+    .send:active {
+      transform: scale(.95);
+    }
+    .send svg {
+      width: calc(11.66 * var(--u));
+      height: calc(11.66 * var(--u));
+    }
+
+    /* ── FOOTER PROOF ── */
+    footer.proof {
+      flex: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(52.3 * var(--vu));
+    }
+
+    .proof-caption {
+      font-family: var(--font-text);
+      font-size: calc(var(--by-fs) * var(--u));
+      font-weight: var(--w-proof);
+      letter-spacing: var(--proof-ls);
+      color: rgba(255, 255, 255, .95);
+      font-variation-settings: "opsz" 32;
+      text-shadow: 0 calc(1 * var(--u)) calc(12 * var(--u)) rgba(0, 0, 0, .35);
+    }
+
+    .logos {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--logo-gap) * var(--u));
+      filter: drop-shadow(0 calc(1 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, .30));
+    }
+    .logo-google { width: calc(96.84 * var(--u)); height: auto; }
+    .logo-cisco  { width: calc(67.29 * var(--u)); height: auto; }
+    .logo-adobe  { width: calc(88.68 * var(--u)); height: auto; }
+
+    /* ── ENTRANCE ANIMATIONS ── */
+    @keyframes e-settle-down {
+      from { opacity: 0; transform: translateY(calc(-5 * var(--u))); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes e-settle-up {
+      from { opacity: 0; transform: translateY(calc(6 * var(--u))); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes e-mark {
+      from { transform: scale(.9); }
+      to { transform: none; }
+    }
+    @keyframes e-focus {
+      from { opacity: 0; transform: translateY(calc(14 * var(--u))); filter: blur(calc(6 * var(--u))); }
+      to { opacity: 1; transform: none; filter: blur(0); }
+    }
+    @keyframes e-panel {
+      from { opacity: 0; transform: translateY(calc(18 * var(--u))) scale(.985); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes e-populate {
+      from { opacity: 0; transform: translateY(calc(4 * var(--u))); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes e-send {
+      from { transform: scale(.82); }
+      to { transform: none; }
+    }
+
+    html.anim header.nav .brand { animation: e-settle-down .58s var(--e-soft) .06s both; }
+    html.anim header.nav .mark { animation: e-mark .62s var(--e-primary) .06s both; }
+    html.anim .links a:nth-child(1) { animation: e-settle-down .50s var(--e-soft) .16s both; }
+    html.anim .links a:nth-child(2) { animation: e-settle-down .50s var(--e-soft) .21s both; }
+    html.anim .links a:nth-child(3) { animation: e-settle-down .50s var(--e-soft) .26s both; }
+    html.anim .links a:nth-child(4) { animation: e-settle-down .50s var(--e-soft) .31s both; }
+    html.anim .nav .cta { animation: e-settle-down .55s var(--e-soft) .34s both; }
+    html.anim .h1 { animation: e-focus 1.00s var(--e-primary) .30s both; will-change: transform, opacity; }
+    html.anim .card { animation: e-panel .90s var(--e-primary) .62s both; will-change: transform, opacity; }
+    html.anim .ph { animation: e-populate .50s var(--e-soft) .88s both; }
+    html.anim .chips { animation: e-populate .50s var(--e-soft) .94s both; }
+    html.anim .right { animation: e-populate .50s var(--e-soft) 1.00s both; }
+    html.anim .send { animation: e-send .50s var(--e-primary) 1.00s both; }
+    html.anim .proof-caption { animation: e-settle-up .55s var(--e-soft) 1.08s both; }
+    html.anim .logo-google { animation: e-settle-up .55s var(--e-soft) 1.16s both; }
+    html.anim .logo-cisco  { animation: e-settle-up .55s var(--e-soft) 1.22s both; }
+    html.anim .logo-adobe  { animation: e-settle-up .55s var(--e-soft) 1.28s both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    /* ── RESPONSIVE: TABLET (600–1180 wide AND height ≥ 600) ── */
+    @media (min-width: 600px) and (max-width: 1180px) and (min-height: 600px) {
+      :root {
+        --u: 1px;
+      }
+      .frame {
+        padding: clamp(24px, 3.4vh, 44px) clamp(28px, 4.2vw, 60px) clamp(26px, 4.4vh, 56px);
+      }
+      .h1 {
+        font-size: clamp(27px, 4.3vw, 44px);
+        line-height: 1.12;
+      }
+      .card {
+        width: min(100%, clamp(516px, 74vw, 760px));
+        height: auto;
+        margin-right: 0;
+        padding: clamp(15px, 1.9vw, 24px);
+        border-radius: clamp(17px, 2.1vw, 26px);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(20px, 3.2vh, 44px);
+      }
+      .ph {
+        position: static;
+        white-space: normal;
+        font-size: clamp(11px, 1.35vw, 14px);
+        line-height: 1.4;
+      }
+      .tools {
+        position: static;
+        height: auto;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: clamp(10px, 1.4vw, 18px);
+      }
+      .chips {
+        flex-wrap: nowrap;
+        gap: clamp(6px, 0.85vw, 10px);
+      }
+      .chip {
+        width: auto;
+        height: clamp(29px, 3.4vh, 34px);
+        padding: 0 clamp(7px, 1vw, 13px);
+        font-size: clamp(9.6px, 1.12vw, 12.5px);
+      }
+      .right {
+        position: static;
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+        gap: 0;
+      }
+      .right > * {
+        position: static;
+      }
+      .model {
+        font-size: clamp(9.8px, 1.12vw, 12.5px);
+      }
+      .attach {
+        margin-left: clamp(9px, 1.4vw, 20px);
+      }
+      .send {
+        margin-left: clamp(9px, 1.3vw, 18px);
+        width: clamp(32px, 3.5vw, 38px);
+        height: clamp(32px, 3.5vw, 38px);
+      }
+      .proof {
+        gap: clamp(15px, 2.5vh, 30px);
+      }
+    }
+
+    /* ── RESPONSIVE: PHONE & COMPACT (max-width: 599px OR height < 600 with width ≤ 1180) ── */
+    @media (max-width: 599px), (max-height: 599px) and (max-width: 1180px) {
+      :root {
+        --u: 1px;
+      }
+      .frame {
+        padding: max(18px, env(safe-area-inset-top)) max(clamp(18px, 5.2vw, 40px), env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(clamp(18px, 5.2vw, 40px), env(safe-area-inset-left));
+      }
+      .links, .nav .cta {
+        display: none;
+      }
+      .burger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: rgba(255, 255, 255, .10);
+        border: 1px solid rgba(255, 255, 255, .14);
+        cursor: pointer;
+      }
+      .burger span, .burger span::before {
+        display: block;
+        width: 17px;
+        height: 2px;
+        background: #ffffff;
+        border-radius: 1px;
+        transition: transform .2s ease;
+      }
+      .burger span::before {
+        content: '';
+        transform: translateY(6px);
+      }
+
+      /* Mobile menu sheet */
+      .sheet {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.32s cubic-bezier(.4, 0, .2, 1);
+        position: absolute;
+        top: 65px;
+        left: 20px;
+        right: 20px;
+        z-index: 50;
+      }
+      #menu:checked ~ .sheet {
+        grid-template-rows: 1fr;
+      }
+      .sheet-inner {
+        overflow: hidden;
+        background: rgba(24, 24, 27, .86);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, .09);
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #menu:checked ~ .sheet .sheet-inner {
+        padding: 16px;
+      }
+      .sheet-inner a {
+        font-size: 15px;
+        color: #ffffff;
+        padding: 8px 0;
+      }
+      .sheet-inner .m-cta {
+        height: 40px;
+        border-radius: 11px;
+        font-size: 15px;
+        font-weight: 500;
+        background: linear-gradient(180deg, #3d3d3f 0%, #1d1d20 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        margin-top: 4px;
+      }
+
+      .h1 {
+        width: 100%;
+        max-width: 15ch;
+        font-size: clamp(29px, 7.6vw, 50px);
+        line-height: 1.14;
+        letter-spacing: -.012em;
+        text-align: center;
+      }
+      .card {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: clamp(16px, 4.6vh, 34px);
+        padding: clamp(13px, 3.4vw, 18px);
+        margin-right: 0;
+      }
+      .ph {
+        position: static;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: clamp(9.4px, 2.95vw, 14px);
+      }
+      .tools {
+        position: static;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .chips {
+        flex-wrap: wrap;
+      }
+      .right {
+        position: static;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .attach {
+        margin-left: auto;
+      }
+      .send {
+        margin-left: 14px;
+        width: 40px;
+        height: 40px;
+      }
+    }
+
+    @media (max-width: 1180px) and (max-height: 560px) {
+      .hero { gap: 16px; }
+      .h1 { font-size: clamp(24px, 5.4vh, 34px); }
+      .proof { gap: 10px; }
+      .frame { padding-top: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <!-- REQUIRED BACKGROUND VIDEO -->
+    <video class="stage-video" autoplay muted loop playsinline src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_124724_bc041163-d651-425f-aea3-2acc1efc2c96.mp4"></video>
+    
+    <div class="frame">
+      <input type="checkbox" id="menu" hidden>
+      
+      <!-- HEADER NAV -->
+      <header class="nav">
+        <!-- BRAND LEFT -->
+        <a href="/portal" class="brand" aria-label="Fastshot home">
+          <svg class="mark" viewBox="0 0 34 34" fill="none">
+            <circle cx="17" cy="17" r="17" fill="#9C86CE"/>
+            <circle cx="17" cy="17" r="8.6" fill="#FFFFFF"/>
+            <circle cx="17" cy="17" r="3.7" fill="#151519"/>
+          </svg>
+          <span class="wordmark">Fastshot</span>
+        </a>
+
+        <!-- NAV CENTER (ABSOLUTELY CENTERED) -->
+        <nav class="links">
+          <a href="/portal">服务大厅</a>
+          <a href="/home-repair">便民家电</a>
+          <a href="/stations">授权网点</a>
+          <a href="/query">客户查单</a>
+        </nav>
+
+        <!-- NAV RIGHT -->
+        <a href="/" class="cta">
+          <span>进入后台</span>
+        </a>
+        <label for="menu" class="burger" aria-label="Toggle menu">
+          <span></span>
+        </label>
+      </header>
+
+      <!-- MOBILE SHEET -->
+      <div class="sheet">
+        <div class="sheet-inner">
+          <a href="/portal">服务大厅</a>
+          <a href="/home-repair">便民家电</a>
+          <a href="/stations">授权网点</a>
+          <a href="/query">客户查单</a>
+          <a href="/" class="m-cta">进入后台</a>
+        </div>
+      </div>
+
+      <!-- MAIN HERO -->
+      <main class="hero">
+        <h1 class="h1">Describe an app. We'll build it.</h1>
+
+        <!-- COMPOSER CARD -->
+        <form class="card" onsubmit="return false">
+          <p class="ph">Build a fintech tracking app with bank level privacy and...</p>
+
+          <div class="tools">
+            <!-- CHIPS LEFT -->
+            <div class="chips">
+              <button type="button" class="chip" style="--cw:107;--pl:12;--ig:3.7">
+                <svg width="15.06" height="11" viewBox="0 0 16 12" fill="currentColor">
+                  <path d="M1 2.5C1 1.67 1.67 1 2.5 1H13.5C14.33 1 15 1.67 15 2.5V9.5C15 10.33 14.33 11 13.5 11H2.5C1.67 11 1 10.33 1 9.5V2.5ZM2.5 2C2.22 2 2 2.22 2 2.5V9.5C2 9.78 2.22 10 2.5 10H13.5C13.78 10 14 9.78 14 9.5V2.5C14 2.22 13.78 2 13.5 2H2.5Z"/>
+                  <rect x="4" y="3.5" width="8" height="5" rx="0.75" fill="currentColor"/>
+                </svg>
+                <span>Attach Screens</span>
+              </button>
+
+              <button type="button" class="chip" style="--cw:108;--pl:16;--ig:3.9">
+                <svg width="11.8" height="16" viewBox="0 0 12 18" fill="currentColor">
+                  <path d="M3 0C1.34 0 0 1.34 0 3C0 4.66 1.34 6 3 6H6V0H3Z"/>
+                  <path d="M6 0H9C10.66 0 12 1.34 12 3C12 4.66 10.66 6 9 6H6V0Z"/>
+                  <path d="M0 9C0 7.34 1.34 6 3 6H6V12H3C1.34 12 0 10.66 0 9Z"/>
+                  <path d="M6 6H9C10.66 6 12 7.34 12 9C12 10.66 10.66 12 9 12C7.34 12 6 10.66 6 9V6Z"/>
+                  <path d="M0 15C0 13.34 1.34 12 3 12H6V15C6 16.66 4.66 18 3 18C1.34 18 0 16.66 0 15Z"/>
+                </svg>
+                <span>Attach a Figma</span>
+              </button>
+
+              <button type="button" class="chip" style="--cw:107;--pl:15.8;--ig:2.9">
+                <svg width="12.13" height="12" viewBox="0 0 13 13" fill="currentColor">
+                  <path d="M6.5 0L7.8 4.2L12 5.5L7.8 6.8L6.5 11L5.2 6.8L1 5.5L5.2 4.2L6.5 0Z"/>
+                </svg>
+                <span>Today's Theme</span>
+              </button>
+            </div>
+
+            <!-- RIGHT CLUSTER (DESKTOP ABSOLUTE COORDINATES) -->
+            <div class="right">
+              <!-- MODEL "Sonnet 4.5" + CHEVRON -->
+              <div class="model">
+                <span>Sonnet 4.5</span>
+                <svg class="chev" viewBox="0 0 7 4" fill="none">
+                  <path d="M1 1L3.5 3L6 1" stroke="#98999C" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+
+              <!-- ATTACH PAPERCLIP -->
+              <button type="button" class="attach" aria-label="Attach file">
+                <svg class="paperclip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                </svg>
+              </button>
+
+              <!-- SEND CIRCLE -->
+              <button type="submit" class="send" aria-label="Build it">
+                <svg viewBox="0 0 12 12" fill="none">
+                  <path d="M6 10.5V1.5M6 1.5L2 5.5M6 1.5L10 5.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </form>
+      </main>
+
+      <!-- FOOTER PROOF -->
+      <footer class="proof">
+        <p class="proof-caption">Built by engineers from</p>
+        <div class="logos">
+          <!-- Google -->
+          <svg class="logo-google" viewBox="0 0 74 24" fill="currentColor">
+            <path fill="#ffffff" d="M9.24 18.23c-4.99 0-9.04-4.04-9.04-9.12S4.25 0 9.24 0c2.75 0 4.7 1.09 6.18 2.51l-1.74 1.74c-1.07-1-2.52-1.75-4.44-1.75-3.66 0-6.52 2.96-6.52 6.61 0 3.65 2.86 6.62 6.52 6.62 2.37 0 3.72-.95 4.58-1.81.74-.74 1.22-1.8 1.41-3.26h-6v-2.49h8.48c.08.45.14.97.14 1.56 0 1.86-.51 4.15-2.18 5.82-1.63 1.7-3.79 2.68-7.17 2.68zm14.86-.34c-4.03 0-7.3-3.08-7.3-7.12 0-4.07 3.27-7.12 7.3-7.12s7.3 3.05 7.3 7.12c0 4.04-3.27 7.12-7.3 7.12zm0-2.48c2.21 0 4.12-1.77 4.12-4.64s-1.91-4.64-4.12-4.64-4.12 1.77-4.12 4.64 1.91 4.64 4.12 4.64zm16.14 2.48c-4.03 0-7.3-3.08-7.3-7.12 0-4.07 3.27-7.12 7.3-7.12s7.3 3.05 7.3 7.12c0 4.04-3.27 7.12-7.3 7.12zm0-2.48c2.21 0 4.12-1.77 4.12-4.64s-1.91-4.64-4.12-4.64-4.12 1.77-4.12 4.64 1.91 4.64 4.12 4.64zm15.42 2.15v-13.6h2.98v13.6zm13.1-6.15l2.48 2.48c-.96 1.4-2.61 3.67-6.07 3.67-4.22 0-7.29-3.27-7.29-7.12 0-4.26 3.1-7.12 6.94-7.12 3.86 0 5.75 2.9 6.37 4.54l.32.84-9.87 4.08c.76 1.5 1.93 2.27 3.63 2.27 1.71 0 2.82-.85 3.49-3.64zm-5.74-2.1l6.6-2.74c-.38-.95-1.48-1.62-2.73-1.62-1.63 0-3.9 1.43-3.87 4.36z"/>
+          </svg>
+
+          <!-- Cisco -->
+          <svg class="logo-cisco" viewBox="0 0 55 24" fill="currentColor">
+            <path fill="#ffffff" d="M4.6 13.5v-3H7v3H4.6zm5.8 2.4v-7.8h2.4v7.8h-2.4zm5.8 2.4V7.5h2.4v10.8h-2.4zm5.8-2.4v-7.8h2.4v7.8H22zm5.8-2.4v-3h2.4v3h-2.4zm5.8 4.8V7.5h2.4v10.8h-2.4zm5.8-2.4v-7.8h2.4v7.8h-2.4zm5.8-2.4v-3h2.4v3h-2.4z"/>
+          </svg>
+
+          <!-- Adobe -->
+          <svg class="logo-adobe" viewBox="0 0 70 20" fill="currentColor">
+            <path fill="#ffffff" d="M12.44 0h9.33v20H12.44zm14.73 0H38.7l-5.77 14.15h-5.76zm-19.23 0L0 20h8.77l2.5-6.1h4.94zm29.84 4.38h4.52c2.72 0 4.41 1.54 4.41 3.91 0 2.48-1.74 4-4.51 4h-4.42zm0 15.62h-3.69V1.12h8.31c4.95 0 8.08 2.89 8.08 7.17 0 4.4-3.23 7.23-8.28 7.23h-4.42zm17.9-10.22c0-3.3 2.43-5.78 5.76-5.78 3.32 0 5.75 2.48 5.75 5.78 0 3.32-2.43 5.8-5.75 5.8-3.33 0-5.76-2.48-5.76-5.8zm-3.59 0c0 5.22 4.05 9.17 9.35 9.17 5.29 0 9.34-3.95 9.34-9.17 0-5.23-4.05-9.18-9.34-9.18-5.3 0-9.35 3.95-9.35 9.18z"/>
+          </svg>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // Teardown anim class after animation completes
+    const removeAnim = () => {
+      document.documentElement.classList.remove('anim');
+    };
+    const lastLogo = document.querySelector('.logo-adobe');
+    if (lastLogo) {
+      lastLogo.addEventListener('animationend', removeAnim, { once: true });
+    }
+    setTimeout(removeAnim, 2600);
+  </script>
+</body>
+</html>

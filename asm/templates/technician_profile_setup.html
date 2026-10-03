@@ -1,0 +1,636 @@
+{% extends "base.html" %}
+
+{% block title %}师傅能力画像完善 ── 智修云师傅入驻向导{% endblock %}
+
+{% block content %}
+<style>
+  /* ══════════════════════════════════════════════════════════════
+     阿里云 (Aliyun) 风格：师傅能力画像引导向导 (Profile Setup Wizard)
+     ══════════════════════════════════════════════════════════════ */
+  
+  /* 隐藏默认黑胶囊导航，由阿里云式向导顶栏接管 */
+  .app-header-pill-wrapper {
+    display: none !important;
+  }
+
+  .portal-bleed-wrapper, .container-full-bleed {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .ali-wizard-viewport {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #0f172a;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* 顶栏柔光流动弥散背景 */
+  .ali-wizard-mesh {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .ali-wizard-mesh::before {
+    content: '';
+    position: absolute;
+    top: -5%;
+    left: 20%;
+    width: 60vw;
+    height: 380px;
+    background: radial-gradient(ellipse at center, rgba(199, 230, 255, 0.6) 0%, rgba(224, 215, 255, 0.35) 45%, rgba(248, 250, 252, 0) 75%);
+    filter: blur(60px);
+  }
+
+  /* ── 1. 顶部 Header ── */
+  .ali-wizard-header {
+    height: 64px;
+    padding: 0 40px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 10;
+  }
+  .ali-logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .ali-logo-symbol {
+    width: 32px;
+    height: 32px;
+  }
+  .ali-brand-text {
+    font-size: 19px;
+    font-weight: 700;
+    color: #ff6a00;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .ali-brand-text span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0284c7;
+    background: #e0f2fe;
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+  .ali-header-exit {
+    font-size: 13.5px;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ali-header-exit:hover {
+    color: #0064c8;
+  }
+
+  /* ── 2. 中间步骤与核心卡片 ── */
+  .ali-wizard-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 64px;
+    position: relative;
+    z-index: 5;
+  }
+
+  /* 步骤条 Stepper */
+  .ali-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 720px;
+    margin-bottom: 32px;
+  }
+  .ali-step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: #64748b;
+    font-weight: 500;
+  }
+  .ali-step-item.done {
+    color: #10b981;
+    font-weight: 600;
+  }
+  .ali-step-item.active {
+    color: #0064c8;
+    font-weight: 700;
+  }
+  .ali-step-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #64748b;
+  }
+  .ali-step-item.done .ali-step-badge {
+    background: #10b981;
+    color: #ffffff;
+  }
+  .ali-step-item.active .ali-step-badge {
+    background: #0064c8;
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 100, 200, 0.2);
+  }
+  .ali-step-line {
+    flex: 1;
+    height: 2px;
+    background: #e2e8f0;
+    max-width: 60px;
+  }
+  .ali-step-line.done {
+    background: #10b981;
+  }
+
+  /* 居中向导白卡片 */
+  .ali-wizard-card {
+    width: 100%;
+    max-width: 820px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    padding: 36px 44px;
+    position: relative;
+  }
+
+  /* 顶部师傅个人徽章条 */
+  .ali-tech-badge-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+  }
+  .ali-tech-info-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .ali-tech-avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #0284c7;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+  }
+  .ali-tech-meta h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0c4a6e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ali-tech-tag {
+    font-size: 11.5px;
+    padding: 2px 8px;
+    background: #38bdf8;
+    color: #ffffff;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .ali-tech-meta p {
+    margin: 4px 0 0;
+    font-size: 12.5px;
+    color: #0369a1;
+  }
+  .ali-tech-id-box {
+    text-align: right;
+  }
+  .ali-tech-id-num {
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0369a1;
+  }
+  .ali-tech-id-tip {
+    font-size: 11.5px;
+    color: #64748b;
+  }
+
+  /* 表单分组 */
+  .ali-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 28px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ali-section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: #0064c8;
+    border-radius: 2px;
+  }
+
+  .ali-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 24px;
+  }
+
+  .ali-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ali-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+  }
+  .ali-input {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13.5px;
+    color: #0f172a;
+    background: #ffffff;
+    transition: all 0.2s;
+  }
+  .ali-input:focus {
+    outline: none;
+    border-color: #0064c8;
+    box-shadow: 0 0 0 3px rgba(0, 100, 200, 0.15);
+  }
+
+  /* 芯片多选区 */
+  .ali-chips-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .ali-choice-chip {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 12.5px;
+    color: #475569;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ali-choice-chip:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+  }
+  .ali-choice-chip.selected {
+    background: #eff6ff;
+    border-color: #0064c8;
+    color: #0064c8;
+    font-weight: 600;
+  }
+
+  /* 半径与开关栏 */
+  .ali-slider-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 6px;
+  }
+  .ali-slider {
+    flex: 1;
+    cursor: pointer;
+  }
+  .ali-radius-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0064c8;
+    min-width: 50px;
+  }
+
+  /* 服务承诺卡片 */
+  .ali-commit-card {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+  }
+  .ali-commit-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+  .ali-commit-item:last-child {
+    margin-bottom: 0;
+  }
+  .ali-commit-item svg {
+    color: #10b981;
+    flex-shrink: 0;
+  }
+
+  /* 底部提交动作条 */
+  .ali-actions-row {
+    margin-top: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 24px;
+  }
+  .ali-submit-wizard-btn {
+    height: 44px;
+    padding: 0 32px;
+    background: #0064c8;
+    border: 1px solid #0064c8;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ali-submit-wizard-btn:hover {
+    background: #0050a3;
+    border-color: #0050a3;
+    box-shadow: 0 4px 12px rgba(0, 100, 200, 0.25);
+  }
+  .ali-skip-link {
+    font-size: 13.5px;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .ali-skip-link:hover {
+    color: #0064c8;
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .ali-wizard-card { padding: 24px 20px; }
+    .ali-grid-2 { grid-template-columns: 1fr; }
+    .ali-tech-badge-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .ali-tech-id-box { text-align: left; }
+    .ali-actions-row { flex-direction: column-reverse; gap: 16px; }
+    .ali-submit-wizard-btn { width: 100%; justify-content: center; }
+  }
+</style>
+
+<div class="ali-wizard-viewport">
+  <div class="ali-wizard-mesh"></div>
+
+  <!-- 1. 顶部 Header -->
+  <header class="ali-wizard-header">
+    <a href="/tech" class="ali-logo-group">
+      <div class="ali-logo-symbol">
+        <svg viewBox="0 0 38 38" fill="none">
+          <path d="M12 9C7.02944 9 3 13.0294 3 18C3 22.9706 7.02944 27 12 27H14V23H12C9.23858 23 7 20.7614 7 18C7 15.2386 9.23858 13 12 13H14V9H12Z" fill="#FF6A00"/>
+          <path d="M26 9C30.9706 9 35 13.0294 35 18C35 22.9706 30.9706 27 26 27H24V23H26C28.7614 23 31 20.7614 31 18C31 15.2386 28.7614 13 26 13H24V9H26Z" fill="#FF6A00"/>
+          <rect x="15" y="16" width="8" height="4" rx="2" fill="#FF6A00"/>
+        </svg>
+      </div>
+      <div class="ali-brand-text">
+        智修云
+        <span>师傅入驻向导</span>
+      </div>
+    </a>
+
+    <a href="/tech" class="ali-header-exit">
+      暂不设置，直接前往工作台 &gt;
+    </a>
+  </header>
+
+  <!-- 2. 中间步骤与核心卡片 -->
+  <main class="ali-wizard-body">
+    <!-- 步骤指示器 -->
+    <div class="ali-stepper">
+      <div class="ali-step-item done">
+        <div class="ali-step-badge">✓</div>
+        <span>账号注册完成</span>
+      </div>
+      <div class="ali-step-line done"></div>
+      <div class="ali-step-item active">
+        <div class="ali-step-badge">2</div>
+        <span>完善技师能力画像</span>
+      </div>
+      <div class="ali-step-line"></div>
+      <div class="ali-step-item">
+        <div class="ali-step-badge">3</div>
+        <span>智能就近派单就绪</span>
+      </div>
+    </div>
+
+    <!-- 居中向导白卡片 -->
+    <div class="ali-wizard-card">
+      <!-- 师傅专属数字工牌微名片 -->
+      <div class="ali-tech-badge-bar">
+        <div class="ali-tech-info-left">
+          <div class="ali-tech-avatar-circle">
+            {{ tech.name[0] if tech and tech.name else '师' }}
+          </div>
+          <div class="ali-tech-meta">
+            <h3>
+              {{ tech.name or '新入驻师傅' }}
+              <span class="ali-tech-tag">平台五星认证</span>
+            </h3>
+            <p>手机号：{{ tech.phone }} · 账户状态：已实名已开通</p>
+          </div>
+        </div>
+        <div class="ali-tech-id-box">
+          <div class="ali-tech-id-num">ID: ZXY-TECH-{{ tech.id or '088' }}</div>
+          <div class="ali-tech-id-tip">专属智能接单档案</div>
+        </div>
+      </div>
+
+      <!-- 画像配置表单 -->
+      <form method="POST" action="{{ url_for('auth.technician_profile_setup') }}" id="profileForm">
+        <!-- 模块 1：资质认证与工龄资历 -->
+        <div class="ali-section-title">1. 专业资质与从业资历</div>
+        <div class="ali-grid-2">
+          <div class="ali-field">
+            <label class="ali-label">师傅真实姓名 / 称呼</label>
+            <input type="text" name="name" class="ali-input" value="{{ tech.name }}" required>
+          </div>
+          <div class="ali-field">
+            <label class="ali-label">职业认证职称</label>
+            <input type="text" name="cert_title" class="ali-input" value="{{ tech.cert_title or '持证高级家电维修工程师' }}" required>
+          </div>
+          <div class="ali-field">
+            <label class="ali-label">家电维修从业年限</label>
+            <select name="years_of_exp" class="ali-input">
+              <option value="2" {% if tech.years_of_exp == 2 %}selected{% endif %}>1~3 年（新锐技术骨干）</option>
+              <option value="5" {% if tech.years_of_exp == 5 or not tech.years_of_exp %}selected{% endif %}>3~5 年（资深实战技师）</option>
+              <option value="8" {% if tech.years_of_exp == 8 %}selected{% endif %}>5~10 年（全能排故专家）</option>
+              <option value="12" {% if tech.years_of_exp == 12 %}selected{% endif %}>10 年以上（行业元老匠人）</option>
+            </select>
+          </div>
+          <div class="ali-field">
+            <label class="ali-label">是否自备专业安全与检测工具</label>
+            <div style="font-size: 13px; color: #10b981; padding-top: 10px; font-weight: 600;">
+              ✓ 已自备高空防坠绳与高阻防静电万用表
+            </div>
+          </div>
+        </div>
+
+        <div class="ali-field" style="margin-top: 16px;">
+          <label class="ali-label">自备工具装备清单 (多选标注，派单算法将自动优选匹配对应疑难工单)</label>
+          <div class="ali-chips-wrap" id="toolsWrap">
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'toolsInput')">数字万用表</span>
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'toolsInput')">双表阀充氟表</span>
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'toolsInput')">高空防坠安全自锁绳</span>
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'toolsInput')">便携焊接氧焊枪</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'toolsInput')">红外热成像仪</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'toolsInput')">管道内窥镜检修仪</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'toolsInput')">真空抽气泵</span>
+          </div>
+          <input type="hidden" name="tools_checked" id="toolsInput" value="{{ tech.tools_checked or '数字万用表,双表阀充氟表,高空防坠安全自锁绳,便携焊接氧焊枪' }}">
+        </div>
+
+        <!-- 模块 2：擅长家电与品牌 -->
+        <div class="ali-section-title">2. 擅长维修品类与主修品牌</div>
+        <div class="ali-field">
+          <label class="ali-label">擅长维修品类 (点击切换选中，智能调度看板将依据品类智能派单)</label>
+          <div class="ali-chips-wrap" id="skillsWrap">
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'skillsInput')">空调制冷与变频主板</span>
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'skillsInput')">冰箱冰柜压缩机与冷媒</span>
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'skillsInput')">滚筒与波轮洗衣机</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'skillsInput')">厨房油烟机与燃气灶</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'skillsInput')">强排式燃气/储水热水器</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'skillsInput')">家庭电路与空气开关跳闸</span>
+          </div>
+          <input type="hidden" name="skill_tags" id="skillsInput" value="{{ tech.skill_tags or '空调制冷与变频主板,冰箱冰柜压缩机与冷媒,滚筒与波轮洗衣机' }}">
+        </div>
+
+        <div class="ali-field" style="margin-top: 16px;">
+          <label class="ali-label">熟练合作品牌</label>
+          <div class="ali-chips-wrap" id="brandsWrap">
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'brandsInput')">格力 GREE</span>
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'brandsInput')">美的 Midea</span>
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'brandsInput')">海尔 Haier</span>
+            <span class="ali-choice-chip selected" onclick="toggleMultiChip(this, 'brandsInput')">西门子 SIEMENS</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'brandsInput')">方太 FOTILE</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'brandsInput')">老板 ROBAM</span>
+            <span class="ali-choice-chip" onclick="toggleMultiChip(this, 'brandsInput')">奥克斯 AUX</span>
+          </div>
+          <input type="hidden" name="preferred_brands" id="brandsInput" value="{{ tech.preferred_brands or '格力 GREE,美的 Midea,海尔 Haier,西门子 SIEMENS' }}">
+        </div>
+
+        <!-- 模块 3：服务网格与派单半径 -->
+        <div class="ali-section-title">3. 服务网格与接单范围</div>
+        <div class="ali-grid-2">
+          <div class="ali-field">
+            <label class="ali-label">常驻常接单商圈网格 / 工作站中心</label>
+            <input type="text" name="service_address" class="ali-input" value="{{ tech.service_address or '南山科技园高新南街道服务站' }}" placeholder="例如：朝阳大悦城商圈 / 软件园二期" required>
+          </div>
+          <div class="ali-field">
+            <label class="ali-label">接单覆盖服务半径 (<span id="radiusNum">{{ tech.service_radius_km or 5.0 }}</span> km)</label>
+            <div class="ali-slider-box">
+              <input type="range" name="service_radius_km" class="ali-slider" min="3" max="25" step="1" value="{{ tech.service_radius_km or 5 }}" oninput="document.getElementById('radiusNum').innerText = this.value">
+              <span class="ali-radius-val"><span id="radiusNum2">{{ tech.service_radius_km or 5 }}</span>公里</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; display: flex; align-items: center; gap: 10px;">
+          <input type="checkbox" name="night_order_enabled" id="nightOrder" value="1" {% if tech.night_order_enabled %}checked{% endif %}>
+          <label for="nightOrder" style="font-size: 13.5px; color: #334155; cursor: pointer;">
+            ⚡ 开启夜间紧急突发报修接单（22:00 ~ 次日 06:00 突发漏水/断电应急抢修，享受 1.5 倍工时溢价补贴）
+          </label>
+        </div>
+
+        <!-- 模块 4：服务规范与自律承诺 -->
+        <div class="ali-commit-card">
+          <div class="ali-commit-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>上门服务主动出示电子工牌与上门健康核验码，穿戴防尘鞋套与规范工作服</span>
+          </div>
+          <div class="ali-commit-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>现场维修严格执行透明配件定价，拆换旧件需由客户现场拍照核验防掉包</span>
+          </div>
+          <div class="ali-commit-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>高空电气作业严守五级防坠标准与绝缘检测，严禁带电高危违规盲目操作</span>
+          </div>
+        </div>
+
+        <!-- 底部提交动作 -->
+        <div class="ali-actions-row">
+          <a href="/tech" class="ali-skip-link">稍后完善，直接进入师傅工作台 &gt;</a>
+          <button type="submit" class="ali-submit-wizard-btn">
+            保存能力画像，点亮接单雷达
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script>
+  // 多选芯片逻辑
+  function toggleMultiChip(chip, inputId) {
+    chip.classList.toggle('selected');
+    const container = chip.parentElement;
+    const selected = Array.from(container.querySelectorAll('.ali-choice-chip.selected')).map(el => el.innerText.trim());
+    document.getElementById(inputId).value = selected.join(',');
+  }
+
+  // 半径滑动同步
+  const slider = document.querySelector('.ali-slider');
+  if (slider) {
+    slider.addEventListener('input', function() {
+      document.getElementById('radiusNum').innerText = this.value;
+      document.getElementById('radiusNum2').innerText = this.value;
+    });
+  }
+</script>
+{% endblock %}

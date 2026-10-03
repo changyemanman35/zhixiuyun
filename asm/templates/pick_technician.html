@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>第 5 步：在线师傅撮合大厅 — 滴滴式沉浸履约 (Quantum² 智修云)</title>
+  <meta name="description" content="第5步：附近在线师傅实时撮合与全城抢单大厅">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=block" rel="stylesheet">
+
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       第 5 步：滴滴打车式拟真全屏地图与沉浸履约大厅
+       ══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: #090c10;
+      color: #f1f5f9;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    button, input, textarea {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* 页面背景微光 */
+    .stage-glow {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 50% 0%, rgba(56, 198, 236, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        #090c10;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 顶部导航条 */
+    .fastshot-nav-wrapper {
+      position: relative;
+      z-index: 20;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px 24px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .fastshot-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .fastshot-logo-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38c6ec 0%, #0064c8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(56, 198, 236, 0.4);
+    }
+    .fastshot-wordmark {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .fastshot-wordmark sup {
+      color: #38c6ec;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .fastshot-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .fastshot-nav-link {
+      font-size: 14px;
+      color: #94a3b8;
+      transition: color 0.2s;
+    }
+    .fastshot-nav-link:hover, .fastshot-nav-link.active {
+      color: #ffffff;
+    }
+
+    /* 主视口容器 */
+    .pick-viewport {
+      position: relative;
+      z-index: 10;
+      max-width: 1120px;
+      margin: 12px auto 80px;
+      padding: 0 20px;
+    }
+
+    /* 顶部工单摘要与回退胶囊 */
+    .order-summary-dock {
+      background: rgba(18, 22, 31, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 14px 20px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+    .summary-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+    .summary-info-cluster {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13.5px;
+      color: #cbd5e1;
+    }
+    .summary-tag {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-weight: 500;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .btn-return-modify {
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-return-modify:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       DIDI 拟真全屏地图容器 (Canvas Engine)
+       ══════════════════════════════════════════════════════════════ */
+    .didi-map-stage-wrapper {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(56, 198, 236, 0.25);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), inset 0 0 40px rgba(0, 0, 0, 0.5);
+      margin-bottom: 22px;
+      background: #090e15;
+    }
+    #didiMapCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 地图覆盖图层：悬浮状态栏 */
+    .map-overlay-header {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .radar-live-pill {
+      pointer-events: auto;
+      background: rgba(10, 14, 22, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 198, 236, 0.4);
+      border-radius: 30px;
+      padding: 6px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .radar-ping-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+      animation: pingGlow 1.5s infinite ease-in-out;
+    }
+    @keyframes pingGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+    .map-scale-badge {
+      pointer-events: auto;
+      background: rgba(10, 14, 22, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11.5px;
+      color: #94a3b8;
+    }
+
+    /* 地图底部悬浮地址标签 */
+    .map-overlay-footer {
+      position: absolute;
+      bottom: 14px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(10, 14, 22, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 30px;
+      padding: 6px 14px;
+      font-size: 12.5px;
+      color: #cbd5e1;
+      z-index: 5;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       B 方案：双模式直接并列选项卡 (TABS)
+       ══════════════════════════════════════════════════════════════ */
+    .mode-tabs-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .mode-tab-card {
+      background: rgba(18, 22, 31, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .mode-tab-card:hover {
+      background: rgba(24, 30, 42, 0.85);
+      border-color: rgba(56, 198, 236, 0.4);
+      transform: translateY(-2px);
+    }
+    .mode-tab-card.active {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: #10b981;
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
+    }
+    .mode-tab-card.active.tab-specified {
+      background: rgba(56, 198, 236, 0.1);
+      border-color: #38c6ec;
+      box-shadow: 0 8px 30px rgba(56, 198, 236, 0.2);
+    }
+    .tab-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .tab-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: #10b981;
+      color: #ffffff;
+    }
+    .tab-tag-blue {
+      background: #38c6ec;
+      color: #03212c;
+    }
+    .tab-subtitle {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* 模式内容展示面板 */
+    .mode-content-pane {
+      display: none;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    .mode-content-pane.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 模式 1：全城广播极速抢单大卡片 */
+    .broadcast-feature-card {
+      background: rgba(18, 22, 31, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .feature-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .feature-icon-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .feature-desc {
+      font-size: 12.5px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* 模式 2：指定金牌师傅卡片网格 */
+    .tech-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .tech-pick-card {
+      background: rgba(18, 22, 31, 0.85);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 18px 20px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .tech-pick-card:hover {
+      background: rgba(26, 32, 45, 0.95);
+      border-color: rgba(56, 198, 236, 0.5);
+      transform: translateY(-2px);
+    }
+    .tech-pick-card.selected {
+      background: rgba(56, 198, 236, 0.1);
+      border-color: #38c6ec;
+      box-shadow: 0 8px 30px rgba(56, 198, 236, 0.25);
+    }
+    .tech-card-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .tech-avatar-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38c6ec 0%, #0064c8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(56, 198, 236, 0.35);
+    }
+    .tech-main-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .tech-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .tech-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .tech-rating-badge {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .tech-cert-label {
+      font-size: 12px;
+      color: #38c6ec;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .tech-distance-row {
+      font-size: 12.5px;
+      color: #34d399;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+    .tech-skills-box {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       底部悬浮呼叫与结算栏 (DIDI DOCK)
+       ══════════════════════════════════════════════════════════════ */
+    .submit-dock-card {
+      background: rgba(14, 18, 26, 0.92);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 20px 28px;
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .fee-info-area {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .fee-main-line {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .fee-label {
+      font-size: 13.5px;
+      color: #94a3b8;
+    }
+    .fee-amount {
+      font-size: 32px;
+      font-weight: 800;
+      color: #10b981;
+      text-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+    }
+    .fee-trust-badge {
+      font-size: 11.5px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .fee-sub-desc {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .btn-call-didi {
+      height: 52px;
+      padding: 0 44px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .btn-call-didi:hover {
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.6);
+    }
+    .btn-call-didi.blue-style {
+      background: linear-gradient(135deg, #38c6ec 0%, #0284c7 100%);
+      box-shadow: 0 6px 24px rgba(56, 198, 236, 0.4);
+    }
+    .btn-call-didi.blue-style:hover {
+      box-shadow: 0 8px 30px rgba(56, 198, 236, 0.6);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       A 方案：纯正滴滴打车原地沉浸履约全屏/半屏模态层
+       ══════════════════════════════════════════════════════════════ */
+    .didi-calling-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(9, 12, 16, 0.85);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .didi-calling-modal.active {
+      display: flex;
+      animation: modalFadeIn 0.3s ease-out forwards;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 560px;
+      background: rgba(18, 24, 34, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 36px 32px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
+      text-align: center;
+      position: relative;
+    }
+
+    /* 状态一：呼叫中声光雷达扫频 */
+    .calling-radar-circle {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .calling-core-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #38c6ec 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 24px #10b981;
+      z-index: 2;
+    }
+    .radar-pulse-ring {
+      position: absolute;
+      border: 2px solid #10b981;
+      border-radius: 50%;
+      opacity: 0;
+      animation: pulseRipple 2s infinite cubic-bezier(0.1, 0.8, 0.3, 1);
+    }
+    .radar-pulse-ring:nth-child(2) { animation-delay: 0.6s; }
+    .radar-pulse-ring:nth-child(3) { animation-delay: 1.2s; }
+    @keyframes pulseRipple {
+      0% { width: 44px; height: 44px; opacity: 1; border-color: #38c6ec; }
+      100% { width: 140px; height: 140px; opacity: 0; border-color: #10b981; }
+    }
+
+    .calling-timer-text {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 6px;
+    }
+    .calling-status-desc {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* 状态二：抢单成功 & 6位核销码履约大卡片 */
+    .fulfilled-container {
+      display: none;
+      animation: popUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      text-align: left;
+    }
+    @keyframes popUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fulfilled-hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 30px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .fulfilled-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+    .fulfilled-sub {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    /* 师傅信息卡 */
+    .matched-tech-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .matched-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #38c6ec 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+    .matched-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .matched-meta {
+      font-size: 13px;
+      color: #38c6ec;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .matched-eta {
+      font-size: 13px;
+      color: #34d399;
+      margin-top: 4px;
+    }
+
+    /* 6位动态核销打卡码黄金专区 */
+    .verify-code-vault {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+      border: 2px dashed rgba(245, 158, 11, 0.5);
+      border-radius: 18px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .verify-code-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .verify-code-digits {
+      font-size: 40px;
+      font-weight: 900;
+      color: #fbbf24;
+      letter-spacing: 6px;
+      font-family: monospace;
+      text-shadow: 0 0 24px rgba(251, 191, 36, 0.6);
+      user-select: all;
+    }
+    .verify-code-tip {
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* 履约操作栏 */
+    .fulfilled-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .btn-act-primary {
+      flex: 1;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      font-size: 14.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-act-primary:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+    .btn-act-secondary {
+      height: 48px;
+      padding: 0 20px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-act-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+      .mode-tabs-container { grid-template-columns: 1fr; }
+      .submit-dock-card { flex-direction: column; align-items: stretch; gap: 16px; }
+      .btn-call-didi { justify-content: center; }
+      .fulfilled-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage-glow"></div>
+
+  <!-- 顶部统一导航 (与系统大厅全面同步) -->
+  <header class="fastshot-nav-wrapper">
+    <a href="/portal" class="fastshot-brand">
+      <div class="fastshot-logo-circle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="#ffffff" stroke-width="2.5" />
+          <circle cx="12" cy="12" r="4" fill="#ffffff" />
+        </svg>
+      </div>
+      <div class="fastshot-wordmark">Quantum<sup>2</sup> 智修云</div>
+    </a>
+    <div class="fastshot-nav-links">
+      <a href="/portal" class="fastshot-nav-link">服务大厅</a>
+      <a href="/safety" class="fastshot-nav-link">安全合规</a>
+      <a href="/recruit" class="fastshot-nav-link">师傅招募</a>
+      <a href="/ai-assistant" class="fastshot-nav-link active">AI智能助手</a>
+    </div>
+  </header>
+
+  <div class="pick-viewport">
+    <!-- 顶部工单摘要与返回第 4 步无损修改 -->
+    <div class="order-summary-dock">
+      <div class="summary-left">
+        <div class="step-badge">
+          <span>●</span>
+          <span>第 5 步：在线师傅撮合大厅</span>
+        </div>
+        <div class="summary-info-cluster">
+          <span class="summary-tag">电器：{{ draft.new_device_model or draft.category }}</span>
+          <span class="summary-tag">故障：{{ draft.description }}</span>
+          <span style="color: #94a3b8; font-size: 13px;">📅 {{ draft.appointment_date or '尽快' }} ({{ draft.appointment_slot }})</span>
+        </div>
+      </div>
+      <a href="javascript:history.back()" class="btn-return-modify">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>返回修改信息</span>
+      </a>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         DIDI 拟真全屏地图画布 (原生离线 CANVAS 引擎)
+         ══════════════════════════════════════════════════════════════ -->
+    <div class="didi-map-stage-wrapper">
+      <canvas id="didiMapCanvas"></canvas>
+
+      <!-- 地图顶部实时状态浮标 -->
+      <div class="map-overlay-header">
+        <div class="radar-live-pill">
+          <div class="radar-ping-dot"></div>
+          <span>智修云调度雷达正在为您撮合附近师傅</span>
+          <span style="color: #94a3b8; font-weight: normal;">(周围 <strong>{{ techs|length }}</strong> 位在线)</span>
+        </div>
+        <div class="map-scale-badge">
+          <span>5km 核心生活圈</span>
+        </div>
+      </div>
+
+      <!-- 地图底部家庭地址浮标 -->
+      <div class="map-overlay-footer">
+        <span style="color: #10b981;">📍 我的服务地址：</span>
+        <span style="color: #ffffff; font-weight: 600;">{{ draft.service_address or '未填写详细地址' }}</span>
+        <span style="color: #94a3b8;">({{ draft.contact_name }} {{ draft.contact_phone }})</span>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         B 方案：双模式直接并列选项卡 (TAB 1: 全城广播 | TAB 2: 指定金牌)
+         ══════════════════════════════════════════════════════════════ -->
+    <div class="mode-tabs-container">
+      <!-- 选项卡 1: 全城广播极速抢单 (默认激活) -->
+      <div class="mode-tab-card active" id="tabBroadcast" onclick="switchMode('broadcast')">
+        <div class="tab-header">
+          <div class="tab-title">
+            <span>⚡ 全城金牌师傅极速广播抢单</span>
+          </div>
+          <span class="tab-tag">平台推荐 · 最快接单</span>
+        </div>
+        <div class="tab-subtitle">
+          向您周边 5km 内所有在线师傅并发推送报修需求，师傅闪电抢单，出勤履约最快。
+        </div>
+      </div>
+
+      <!-- 选项卡 2: 指定金牌师傅 (自主挑选) -->
+      <div class="mode-tab-card tab-specified" id="tabSpecified" onclick="switchMode('specified')">
+        <div class="tab-header">
+          <div class="tab-title">
+            <span>👨‍🔧 指定金牌师傅 (自主挑选)</span>
+          </div>
+          <span class="tab-tag tab-tag-blue">高评分 · 官方持证</span>
+        </div>
+        <div class="tab-subtitle">
+          查看附近在线师傅的擅长品类、出工次数、真实距离与用户好评，指定师傅派单。
+        </div>
+      </div>
+    </div>
+
+    <!-- 模式 1 展示区：全城广播极速抢单保障面板 -->
+    <div class="mode-content-pane active" id="paneBroadcast">
+      <div class="broadcast-feature-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+            <span>🛡️ 智修云邻里派单履约双重保障机制</span>
+          </h3>
+          <span style="font-size: 12.5px; color: #10b981; font-weight: 700;">30天质量兜底保障</span>
+        </div>
+        <div class="feature-grid">
+          <div class="feature-item">
+            <div class="feature-icon-title">
+              <span>💳 ¥30 上门排查费第三方托管</span>
+            </div>
+            <div class="feature-desc">
+              报修费用锁定在托管专户。若师傅未上门或您主动取消，随时秒级全额原路退还。
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-title">
+              <span>🔑 现场 6 位专属核销码打卡</span>
+            </div>
+            <div class="feature-desc">
+              师傅持证到场完成检测后，您出示专属 6 位核销码打卡核验，平台才解冻支付劳务费。
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-title">
+              <span>🛠️ 线下深度维修 0 抽成</span>
+            </div>
+            <div class="feature-desc">
+              根除传统外包抽成导致的乱加价，材料与大修费 100% 归师傅，价格更实惠透明。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模式 2 展示区：指定金牌师傅卡片网格 -->
+    <div class="mode-content-pane" id="paneSpecified">
+      <div class="tech-cards-grid">
+        {% for t in techs %}
+        <div class="tech-pick-card {% if loop.first %}selected{% endif %}" 
+             data-tech-id="{{ t.id }}" 
+             data-tech-name="{{ t.name }}"
+             data-tech-phone="{{ t.phone }}"
+             data-tech-dist="{{ t.distance_km }}"
+             onclick="selectTechCard(this, {{ t.id }}, '{{ t.name }}')">
+          <div class="tech-card-top">
+            <div class="tech-avatar-circle">👨‍🔧</div>
+            <div class="tech-main-info">
+              <div class="tech-name-row">
+                <span class="tech-name">{{ t.name }}</span>
+                <span class="tech-rating-badge">★ {{ t.rating }}</span>
+              </div>
+              <div class="tech-cert-label">{{ t.cert_title }}</div>
+            </div>
+          </div>
+          <div class="tech-distance-row">
+            <span>📍 距您约 {{ t.distance_km }} km</span>
+            <span style="color: #94a3b8; font-size: 11.5px; margin-left: auto;">已完工 {{ t.orders_count }} 单</span>
+          </div>
+          <div class="tech-skills-box">
+            <span>擅长：{{ t.skill_tags }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 隐藏建单真实数据表单 -->
+    <form id="hiddenOrderForm" action="/orders/new" method="POST">
+      <input type="hidden" name="customer_id" value="{{ draft.customer_id or '' }}" />
+      <input type="hidden" name="device_id" value="{{ draft.device_id or 'new' }}" />
+      <input type="hidden" name="new_device_model" value="{{ draft.new_device_model or draft.category }}" />
+      <input type="hidden" name="description" value="{{ draft.description }}" />
+      <input type="hidden" name="appointment_date" value="{{ draft.appointment_date }}" />
+      <input type="hidden" name="appointment_slot" value="{{ draft.appointment_slot }}" />
+      <input type="hidden" name="contact_name" value="{{ draft.contact_name }}" />
+      <input type="hidden" name="contact_phone" value="{{ draft.contact_phone }}" />
+      <input type="hidden" name="service_address" value="{{ draft.service_address }}" />
+      <input type="hidden" name="priority" value="normal" />
+      <input type="hidden" name="selected_tech_id" id="input_selected_tech_id" value="broadcast" />
+      <input type="hidden" name="is_ajax" value="1" />
+    </form>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         底部悬浮结算与呼叫栏 (DIDI DOCK)
+         ══════════════════════════════════════════════════════════════ -->
+    <div class="submit-dock-card">
+      <div class="fee-info-area">
+        <div class="fee-main-line">
+          <span class="fee-label">上门排查预付：</span>
+          <span class="fee-amount">¥30.00</span>
+          <span class="fee-trust-badge">🔒 平台专户托管</span>
+        </div>
+        <div class="fee-sub-desc">
+          未上门随时可退 · 现场 6 位动态核销码打卡确认才放款 · 深度维修 0 抽成
+        </div>
+      </div>
+
+      <button type="button" class="btn-call-didi" id="btnCallDidi" onclick="executeDidiCalling()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <span id="callBtnText">⚡ 立即呼叫全城师傅抢单</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       A 方案：纯正滴滴打车原地沉浸履约全屏/半屏模态层
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="didi-calling-modal" id="didiModal">
+    <div class="modal-box">
+      <!-- 阶段 1：声光雷达扫频呼叫中 -->
+      <div id="callingStageBox">
+        <div class="calling-radar-circle">
+          <div class="radar-pulse-ring"></div>
+          <div class="radar-pulse-ring"></div>
+          <div class="radar-pulse-ring"></div>
+          <div class="calling-core-icon">📡</div>
+        </div>
+        <div class="calling-timer-text" id="callingStopwatch">00:01</div>
+        <div class="calling-status-desc" id="callingStatusDesc">
+          正在为您呼叫附近 <strong>{{ techs|length }}</strong> 位在线金牌师傅...<br>
+          平台正在智能撮合最近距离的持证工程师，请稍候
+        </div>
+      </div>
+
+      <!-- 阶段 2：抢单成功 & 6位专属核销码履约大卡片 -->
+      <div class="fulfilled-container" id="fulfilledStageBox">
+        <div class="fulfilled-hero-tag">
+          <span>✓</span>
+          <span>接单成功 · 正在极速出勤</span>
+        </div>
+        <h2 class="fulfilled-title">师傅已接单，预计 20 分钟内上门</h2>
+        <p class="fulfilled-sub">已为您建立工单直连通道，现场检测完成后请凭专属码核销结算</p>
+
+        <!-- 师傅信息卡 -->
+        <div class="matched-tech-card">
+          <div class="matched-avatar">👨‍🔧</div>
+          <div style="flex: 1;">
+            <div class="matched-name" id="resTechName">李师傅 (金牌认证工程师)</div>
+            <div class="matched-meta">官方持证 · 已缴纳 ¥2000 出工质保金</div>
+            <div class="matched-eta" id="resTechEta">📍 距离您约 1.2km · 电话：<span id="resTechPhone">138****0000</span></div>
+          </div>
+        </div>
+
+        <!-- 6位动态核销打卡码黄金专区 -->
+        <div class="verify-code-vault">
+          <div class="verify-code-label">🔑 现场专属 6 位核销打卡码</div>
+          <div class="verify-code-digits" id="resCheckinCode">------</div>
+          <div class="verify-code-tip">
+            请在师傅到场排查完毕后，向师傅出示此 6 位码打卡。<br>
+            核销后平台解冻结算 ¥30 出工费。未核销前费用 100% 托管保护。
+          </div>
+        </div>
+
+        <!-- 履约操作栏 -->
+        <div class="fulfilled-actions">
+          <a id="btnViewOrderDetail" href="/query" class="btn-act-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>查看工单全貌与进度</span>
+          </a>
+          <button type="button" class="btn-act-secondary" onclick="alert('师傅已收到您的需求，正在备件准备出发，稍后将电话与您确认具体进门细节！')">
+            <span>📞 联系师傅</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       JAVASCRIPT: 原生 CANVAS 拟真地图与沉浸履约交互逻辑
+       ══════════════════════════════════════════════════════════════ -->
+  <script>
+    // 师傅后端数据
+    const rawTechs = [
+      {% for t in techs %}
+      {
+        id: {{ t.id }},
+        name: "{{ t.name }}",
+        dist: {{ t.distance_km }},
+        rating: {{ t.rating }},
+        phone: "{{ t.phone }}"
+      }{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ];
+
+    let currentMode = 'broadcast'; // 'broadcast' 或 'specified'
+    let selectedTechId = rawTechs.length > 0 ? rawTechs[0].id : null;
+    let selectedTechName = rawTechs.length > 0 ? rawTechs[0].name : '';
+    let isCallingAnimation = false;
+    let fulfilledTargetTech = null;
+
+    // 模式切换
+    function switchMode(mode) {
+      currentMode = mode;
+      document.getElementById('tabBroadcast').classList.toggle('active', mode === 'broadcast');
+      document.getElementById('tabSpecified').classList.toggle('active', mode === 'specified');
+      document.getElementById('paneBroadcast').classList.toggle('active', mode === 'broadcast');
+      document.getElementById('paneSpecified').classList.toggle('active', mode === 'specified');
+
+      const btn = document.getElementById('btnCallDidi');
+      const text = document.getElementById('callBtnText');
+      const input = document.getElementById('input_selected_tech_id');
+
+      if (mode === 'broadcast') {
+        input.value = 'broadcast';
+        btn.classList.remove('blue-style');
+        text.innerText = '⚡ 立即呼叫全城师傅抢单';
+      } else {
+        input.value = selectedTechId || 'broadcast';
+        btn.classList.add('blue-style');
+        text.innerText = `👨‍🔧 立即指定【${selectedTechName || '金牌师傅'}】派单`;
+      }
+    }
+
+    // 指定师傅卡片点击
+    function selectTechCard(cardEl, id, name) {
+      document.querySelectorAll('.tech-pick-card').forEach(c => c.classList.remove('selected'));
+      cardEl.classList.add('selected');
+      selectedTechId = id;
+      selectedTechName = name;
+      document.getElementById('input_selected_tech_id').value = id;
+      document.getElementById('callBtnText').innerText = `👨‍🔧 立即指定【${name}】派单`;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 原生 HTML5 CANVAS 拟真暗黑高德/滴滴地图引擎
+    // ══════════════════════════════════════════════════════════════
+    const canvas = document.getElementById('didiMapCanvas');
+    const ctx = canvas.getContext('2d');
+    let mapWidth, mapHeight;
+    let radarAngle = 0;
+    let pulseStep = 0;
+    let dashOffset = 0;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      mapWidth = rect.width;
+      mapHeight = rect.height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // 预计算技师在 Canvas 中的相对坐标 (围绕中心极坐标分布)
+    const mapTechNodes = rawTechs.map((t, idx) => {
+      const angle = (idx * (2 * Math.PI / Math.max(rawTechs.length, 1))) + 0.3;
+      const radius = 70 + (t.dist * 35);
+      return {
+        ...t,
+        angle: angle,
+        baseRadius: Math.min(radius, 150),
+        x: 0,
+        y: 0
+      };
+    });
+
+    function drawDidiMap() {
+      ctx.clearRect(0, 0, mapWidth, mapHeight);
+      const centerX = mapWidth / 2;
+      const centerY = mapHeight / 2;
+
+      // 1. 绘制暗黑路网底图网格 (主干道与次干道)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.lineWidth = 1;
+      const gridSize = 40;
+      for (let x = 0; x < mapWidth; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, mapHeight);
+        ctx.stroke();
+      }
+      for (let y = 0; y < mapHeight; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(mapWidth, y);
+        ctx.stroke();
+      }
+
+      // 绘制主干道发光脉络
+      ctx.strokeStyle = 'rgba(56, 198, 236, 0.12)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, centerY - 30);
+      ctx.lineTo(mapWidth, centerY + 40);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(centerX - 90, 0);
+      ctx.lineTo(centerX + 60, mapHeight);
+      ctx.stroke();
+
+      // 2. 绘制 1km, 3km, 5km 辐射雷达圈
+      [60, 110, 160].forEach((r, i) => {
+        ctx.strokeStyle = 'rgba(56, 198, 236, 0.08)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      // 3. 呼叫中动态雷达扫频光束
+      if (isCallingAnimation) {
+        radarAngle += 0.05;
+        const grad = ctx.createRadialGradient(centerX, centerY, 10, centerX, centerY, 160);
+        grad.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+        grad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, 160, radarAngle, radarAngle + 0.4);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // 4. 绘制中心：用户家庭图钉 (绿色发光涟漪圈)
+      pulseStep += 0.03;
+      const rippleR = 14 + (Math.sin(pulseStep) * 4);
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, rippleR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 5. 绘制周边技师节点与导航虚线
+      dashOffset -= 0.6;
+      mapTechNodes.forEach((tech) => {
+        tech.x = centerX + Math.cos(tech.angle) * tech.baseRadius;
+        tech.y = centerY + Math.sin(tech.angle) * tech.baseRadius;
+
+        const isChosen = (fulfilledTargetTech && fulfilledTargetTech.id === tech.id) ||
+                         (currentMode === 'specified' && selectedTechId === tech.id);
+
+        // 如果被选中或抢单成功，画动态发光发亮导航路径虚线
+        if (isChosen) {
+          ctx.strokeStyle = '#38c6ec';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([6, 4]);
+          ctx.lineDashOffset = dashOffset;
+          ctx.beginPath();
+          ctx.moveTo(tech.x, tech.y);
+          ctx.quadraticCurveTo(
+            (centerX + tech.x) / 2 + 15,
+            (centerY + tech.y) / 2 - 15,
+            centerX,
+            centerY
+          );
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // 技师图标圈
+        ctx.fillStyle = isChosen ? '#38c6ec' : 'rgba(30, 41, 59, 0.9)';
+        ctx.strokeStyle = isChosen ? '#ffffff' : 'rgba(56, 198, 236, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(tech.x, tech.y, isChosen ? 14 : 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // 师傅文字标注
+        ctx.fillStyle = isChosen ? '#ffffff' : '#94a3b8';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${tech.name} ${tech.dist}km`, tech.x, tech.y + (isChosen ? 26 : 22));
+      });
+
+      requestAnimationFrame(drawDidiMap);
+    }
+    requestAnimationFrame(drawDidiMap);
+
+    // ══════════════════════════════════════════════════════════════
+    // A 方案：纯正滴滴打车原地沉浸履约全流程
+    // ══════════════════════════════════════════════════════════════
+    let stopwatchInterval = null;
+
+    function executeDidiCalling() {
+      const modal = document.getElementById('didiModal');
+      const callingBox = document.getElementById('callingStageBox');
+      const fulfilledBox = document.getElementById('fulfilledStageBox');
+      const stopwatchEl = document.getElementById('callingStopwatch');
+
+      modal.classList.add('active');
+      callingBox.style.display = 'block';
+      fulfilledBox.style.display = 'none';
+      isCallingAnimation = true;
+
+      // 秒表计时
+      let seconds = 0;
+      stopwatchEl.innerText = '00:01';
+      clearInterval(stopwatchInterval);
+      stopwatchInterval = setInterval(() => {
+        seconds++;
+        const s = seconds < 10 ? `0${seconds}` : seconds;
+        stopwatchEl.innerText = `00:${s}`;
+      }, 1000);
+
+      // 发送真实建单 Fetch 请求
+      const form = document.getElementById('hiddenOrderForm');
+      const formData = new FormData(form);
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('建单请求响应异常');
+        return res.json();
+      })
+      .then(data => {
+        // 延时 2 秒模拟逼真滴滴接单倒计时动效
+        setTimeout(() => {
+          clearInterval(stopwatchInterval);
+          isCallingAnimation = false;
+
+          // 选定接单师傅并更新地图
+          const matched = rawTechs.find(t => t.id === Number(formData.get('selected_tech_id'))) || rawTechs[0] || {
+            name: data.tech_name,
+            dist: 1.2,
+            phone: data.tech_phone
+          };
+          fulfilledTargetTech = matched;
+
+          // 填充履约卡片数据
+          document.getElementById('resTechName').innerText = `${matched.name} (官方金牌技师)`;
+          document.getElementById('resTechPhone').innerText = matched.phone || data.tech_phone;
+          document.getElementById('resTechEta').innerHTML = `📍 距离您约 <strong>${matched.dist || '1.2'}</strong> km · 预计 20 分钟内上门`;
+          document.getElementById('resCheckinCode').innerText = data.checkin_code || '892416';
+          
+          if (data.order_id) {
+            document.getElementById('btnViewOrderDetail').href = `/orders/${data.order_id}`;
+          }
+
+          // 平滑切换为履约大卡
+          callingBox.style.display = 'none';
+          fulfilledBox.style.display = 'block';
+        }, 2200);
+      })
+      .catch(err => {
+        clearInterval(stopwatchInterval);
+        isCallingAnimation = false;
+        // 网络或降级保底：若 Fetch 失败，则直接采用标准表单提交保证业务不中断
+        form.submit();
+      });
+    }
+  </script>
+</body>
+</html>

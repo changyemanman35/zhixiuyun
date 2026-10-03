@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}演示数据{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="page-title">演示数据管理</h1>
+
+    <!-- KPI 卡片 -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-value">{{ total }}</div>
+            <div class="kpi-label">演示工单总数</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ statuses_covered }}/7</div>
+            <div class="kpi-label">状态覆盖</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ late_closed }}</div>
+            <div class="kpi-label">超时关闭单</div>
+        </div>
+    </div>
+
+    <!-- 状态分布 -->
+    {% if status_dist %}
+    <div class="card">
+        <div class="card-header">状态分布</div>
+        <table>
+            <tr><th>状态</th><th>数量</th></tr>
+            {% for s, c in status_dist.items() %}
+            <tr>
+                <td><span class="status-badge" style="background:{{ STATUS_COLORS.get(s, '#999') }}">{{ STATUS_LABELS.get(s, s) }}</span></td>
+                <td>{{ c }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- 客户查询演示凭证 -->
+    <div class="card">
+        <div class="card-header">客户查询演示凭证</div>
+        {% if demo_orders %}
+        <p class="text-sm text-muted mb-8">以下凭证可直接用于 <a href="/query">客户查询页</a> 演示：</p>
+        <table>
+            <tr><th>工单号</th><th>手机号</th><th>状态</th></tr>
+            {% for o in demo_orders %}
+            <tr>
+                <td><code>{{ o.order_no }}</code></td>
+                <td><code>{{ o.customer.phone }}</code></td>
+                <td><span class="status-badge" style="background:{{ STATUS_COLORS.get(o.status, '#999') }}">{{ STATUS_LABELS.get(o.status, o.status) }}</span></td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="text-muted">暂无演示工单，请先生成。</p>
+        {% endif %}
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="card">
+        <div class="card-header">操作</div>
+        {% if has_data %}
+        <div class="btn-group mb-8">
+            <form action="/seed/generate" method="post">
+                <input type="hidden" name="mode" value="append">
+                <button type="submit" class="btn btn-primary">追加一批</button>
+            </form>
+            <form action="/seed/generate" method="post">
+                <input type="hidden" name="mode" value="reset">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('确定清空并重新生成？')">清空重建</button>
+            </form>
+            <form action="/seed/clear" method="post">
+                <button type="submit" class="btn btn-outline" onclick="return confirm('确定清空演示数据？')">仅清空</button>
+            </form>
+        </div>
+        {% else %}
+        <form action="/seed/generate" method="post">
+            <input type="hidden" name="mode" value="reset">
+            <button type="submit" class="btn btn-primary">生成演示数据</button>
+        </form>
+        {% endif %}
+        <p class="text-sm text-muted mt-8">
+            清空操作仅删除标记为 <code>is_demo=True</code> 的工单及关联记录，客户/设备/技师/配件等主数据一律保留。
+        </p>
+    </div>
+
+    <!-- 口径说明 -->
+    <div class="card">
+        <div class="card-header">口径说明</div>
+        <table>
+            <tr><th>项目</th><th>值</th></tr>
+            <tr><td>SLA 响应阈值</td><td>{{ config.SLA_DISPATCH_HOURS }} 小时</td></tr>
+            <tr><td>SLA 维修阈值（黄线）</td><td>{{ config.SLA_PROGRESS_HOURS }} 小时</td></tr>
+            <tr><td>SLA 维修阈值（红线）</td><td>{{ config.SLA_PROGRESS_DANGER_HOURS }} 小时</td></tr>
+            <tr><td>工时单价</td><td>¥{{ "%.2f"|format(config.LABOR_RATE_PER_HOUR) }}/小时</td></tr>
+            <tr><td>普通上门费</td><td>¥{{ "%.2f"|format(config.VISIT_FEE_NORMAL) }}</td></tr>
+            <tr><td>加急上门费</td><td>¥{{ "%.2f"|format(config.VISIT_FEE_URGENT) }}</td></tr>
+        </table>
+    </div>
+</div>
+{% endblock %}

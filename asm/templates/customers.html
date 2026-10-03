@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}客户设备档案{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="flex-between mb-16">
+        <h1 class="page-title" style="margin-bottom:0;">
+            {% if is_customer_view %}
+                💻 我的登记设备资产
+            {% else %}
+                🏢 客户与设备档案管理
+            {% endif %}
+        </h1>
+    </div>
+
+    {% if not is_customer_view %}
+    <!-- 调度员专属：新增客户卡片 -->
+    <div class="card mb-16">
+        <div class="card-header">新增客户</div>
+        <form action="/customers" method="post" class="flex flex-wrap" style="gap:12px; align-items:flex-end;">
+            <div class="form-group" style="margin-bottom:0; min-width:140px;">
+                <label>客户姓名 *</label>
+                <input type="text" name="name" required placeholder="如：王强">
+            </div>
+            <div class="form-group" style="margin-bottom:0; min-width:150px;">
+                <label>联系手机 *</label>
+                <input type="tel" name="phone" required placeholder="11位手机号">
+            </div>
+            <div class="form-group" style="margin-bottom:0; min-width:180px;">
+                <label>所属公司（选填）</label>
+                <input type="text" name="company" placeholder="如：明德科技">
+            </div>
+            <div class="form-group" style="margin-bottom:0; flex-grow:1; min-width:200px;">
+                <label>上门地址 *</label>
+                <input type="text" name="address" required placeholder="详细地址">
+            </div>
+            <button type="submit" class="btn btn-primary" style="height:36px;">+ 创建客户档案</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- 客户列表 -->
+    {% for customer in customers %}
+    <div class="card customer-card">
+        <div class="flex-between mb-8">
+            <div>
+                <strong style="font-size:16px;">{{ customer.name }}</strong>
+                {% if customer.company %}
+                <span class="text-muted" style="margin-left:8px;">({{ customer.company }})</span>
+                {% endif %}
+                <span class="text-muted" style="margin-left:12px;">工单数: {{ customer.work_order_count }}</span>
+            </div>
+            <div class="btn-group">
+                <details>
+                    <summary class="btn btn-sm btn-outline">编辑客户</summary>
+                    <form action="/customers/{{ customer.id }}/edit" method="post" style="margin-top:8px; padding:8px; background:#fafafa; border:1px solid var(--c-border); border-radius:4px;">
+                        <div class="form-group mb-8">
+                            <label>姓名</label>
+                            <input type="text" name="name" value="{{ customer.name }}" required>
+                        </div>
+                        <div class="form-group mb-8">
+                            <label>手机号</label>
+                            <input type="tel" name="phone" value="{{ customer.phone }}" required>
+                        </div>
+                        <div class="form-group mb-8">
+                            <label>公司</label>
+                            <input type="text" name="company" value="{{ customer.company or '' }}">
+                        </div>
+                        <div class="form-group mb-8">
+                            <label>地址</label>
+                            <input type="text" name="address" value="{{ customer.address }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary">保存修改</button>
+                    </form>
+                </details>
+                <form action="/customers/{{ customer.id }}/delete" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确认删除该客户？')">删除客户</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="customer-info mb-8">
+            <span>手机: {{ customer.phone }}</span>
+            <span>地址: {{ customer.address }}</span>
+        </div>
+
+        <!-- 设备列表表格 -->
+        <table class="mb-8">
+            <tr>
+                <th>设备型号</th>
+                <th>序列号</th>
+                <th>购买日期</th>
+                <th>保修月数</th>
+                <th>保修截止日</th>
+                <th>当前保修状态</th>
+                <th>操作</th>
+            </tr>
+            {% for d in customer.devices %}
+            {% set winfo = rules.warranty_breakdown(d) %}
+            <tr>
+                <td>{{ d.model }}</td>
+                <td>{{ d.serial_no or '-' }}</td>
+                <td>{{ d.purchase_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ d.warranty_months }} 个月</td>
+                <td>
+                    {{ winfo.actual_end.strftime('%Y-%m-%d') }}
+                    {% if d.warranty_override_date %}
+                    <small class="text-warn">(含延保)</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if winfo.is_warranty %}
+                    <span class="status-badge" style="background:#4caf50;">保内</span>
+                    {% else %}
+                    <span class="status-badge" style="background:#f44336;">保外</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group">
+                        <details>
+                            <summary class="btn btn-sm btn-outline">编辑</summary>
+                            <form action="/devices/{{ d.id }}/edit" method="post" style="margin-top:4px; padding:6px; background:#fff; border:1px solid var(--c-border); border-radius:4px;">
+                                <div class="form-group mb-8">
+                                    <label>型号</label>
+                                    <input type="text" name="model" value="{{ d.model }}" required>
+                                </div>
+                                <div class="form-group mb-8">
+                                    <label>序列号</label>
+                                    <input type="text" name="serial_no" value="{{ d.serial_no or '' }}">
+                                </div>
+                                <div class="form-group mb-8">
+                                    <label>购买日期</label>
+                                    <input type="date" name="purchase_date" value="{{ d.purchase_date.strftime('%Y-%m-%d') }}" required>
+                                </div>
+                                <div class="form-group mb-8">
+                                    <label>保修月数</label>
+                                    <input type="number" name="warranty_months" value="{{ d.warranty_months }}" required>
+                                </div>
+                                <div class="form-group mb-8">
+                                    <label>延保覆盖截止日</label>
+                                    <input type="date" name="warranty_override_date" value="{{ d.warranty_override_date.strftime('%Y-%m-%d') if d.warranty_override_date else '' }}">
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary">保存</button>
+                            </form>
+                        </details>
+                        <form action="/devices/{{ d.id }}/delete" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确认删除该设备？')">删除</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-center text-muted" style="padding:12px 0;">该客户暂无维护设备</td></tr>
+            {% endfor %}
+        </table>
+
+        <!-- 为该客户添加设备 -->
+        <details>
+            <summary class="text-sm">+ 为该客户添加设备</summary>
+            <form action="/customers/{{ customer.id }}/devices" method="post" class="mt-8 flex flex-wrap" style="gap:10px; align-items:flex-end; background:#fafafa; padding:10px; border-radius:4px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>设备型号 *</label>
+                    <input type="text" name="model" required placeholder="如：打印机 P-100">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>序列号</label>
+                    <input type="text" name="serial_no" placeholder="如：SN-77120">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>购买日期 *</label>
+                    <input type="date" name="purchase_date" required>
+                </div>
+                <div class="form-group" style="margin-bottom:0; width:100px;">
+                    <label>保修月数</label>
+                    <input type="number" name="warranty_months" value="{{ config.DEFAULT_WARRANTY_MONTHS }}">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>延保覆盖日</label>
+                    <input type="date" name="warranty_override_date">
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary" style="height:35px;">添加设备</button>
+            </form>
+        </details>
+    </div>
+    {% else %}
+    <div class="card empty-state">
+        <p>暂无客户档案，请先在上方表单添加客户。</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

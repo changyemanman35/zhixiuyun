@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}提交完工 - {{ order.order_no }}{% endblock %}
+{% block content %}
+<div class="container" style="max-width:750px;">
+    <h1 class="page-title">技师完工录入: {{ order.order_no }}</h1>
+
+    <div class="card mb-16">
+        <div class="card-header">报修信息摘要</div>
+        <div class="detail-row"><span class="label">客户:</span><span>{{ order.customer.name }} ({{ order.customer.address }})</span></div>
+        <div class="detail-row"><span class="label">设备型号:</span><span>{{ order.device.model }}</span></div>
+        <div class="detail-row">
+            <span class="label">保修属性:</span>
+            <span>
+                {% if order.warranty_flag %}
+                <span class="status-badge" style="background:#4caf50;">保内维修（费用恒为 ¥0.00）</span>
+                {% else %}
+                <span class="status-badge" style="background:#f44336;">保外收费维修</span>
+                {% endif %}
+            </span>
+        </div>
+        <div class="detail-row"><span class="label">报修故障:</span><span>{{ order.description }}</span></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">完工表单录入</div>
+        <form action="/tech/{{ order.id }}/complete" method="post">
+            <div class="form-group">
+                <label>故障分类（必填）</label>
+                <select name="fault_type_id" required>
+                    <option value="">-- 请选择故障分类 --</option>
+                    {% for ft in fault_types if ft.active %}
+                    <option value="{{ ft.id }}">{{ ft.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>处理方式（必填）</label>
+                <select name="resolution" required>
+                    <option value="">-- 请选择处理方式 --</option>
+                    {% for res in resolutions %}
+                    <option value="{{ res }}">{{ res }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>实际工时（小时，步长 0.5，已按停留时间预填）</label>
+                <input type="number" name="labor_hours" step="{{ config.LABOR_HOURS_STEP }}" min="{{ config.LABOR_HOURS_MIN }}" max="{{ config.LABOR_HOURS_MAX }}" value="{{ labor_hours_prefill }}" required>
+                <small>工时单价：¥{{ "%.2f"|format(config.LABOR_RATE_PER_HOUR) }}/小时（保内免费）</small>
+            </div>
+
+            <div class="form-group">
+                <label>配件消耗（填写使用数量，不消耗留空或填 0）</label>
+                <table>
+                    <tr><th>配件名称</th><th>单价（提交时固化为快照价）</th><th>消耗数量</th></tr>
+                    {% for p in parts if p.active %}
+                    <tr>
+                        <td>{{ p.name }}</td>
+                        <td>¥{{ "%.2f"|format(p.unit_price) }}</td>
+                        <td style="width:120px;">
+                            <input type="number" name="qty_{{ p.id }}" min="0" value="0" style="padding:4px 8px;">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
+            <div class="form-group">
+                <label>完工说明（内部备注，不对客户公开）</label>
+                <textarea name="resolution_note" placeholder="例如：更换损坏电容并完成清洁"></textarea>
+            </div>
+
+            <div class="card" style="background:#fafafa; margin-bottom:16px;">
+                <div class="card-header" style="font-size:13px;">费用说明</div>
+                {% if order.warranty_flag %}
+                <p class="text-success" style="font-weight:600;">保修范围内，最终结算费用为 ¥0.00</p>
+                {% else %}
+                <p class="text-muted" style="font-size:13px;">
+                    基础收费包含：上门费 ¥{{ "%.2f"|format(config.VISIT_FEE_URGENT if order.priority == 'urgent' else config.VISIT_FEE_NORMAL) }} + 工时费（工时×{{ config.LABOR_RATE_PER_HOUR }}）+ 配件费合计。提交后将自动锁定账单并流转至待客户确认。
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="flex" style="gap:12px;">
+                <button type="submit" class="btn btn-success">✓ 提交完工并送审</button>
+                <a href="/tech" class="btn btn-outline">返回工作台</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

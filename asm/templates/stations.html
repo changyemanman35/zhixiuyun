@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>全国官方授权服务网点查询 — 官方售后服务平台</title>
+  <meta name="description" content="官方认证授权服务网点，专业工程师驻场，原装配件储备，提供全国范围内的家电检测与送修服务。">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+
+  <style>
+    /* ════════════════════════════════════════════════════════════════════
+       基础重置与全局字体
+       ════════════════════════════════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #f7f9fa;
+      color: #1f2937;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       QUANTUM² 统一纯黑药丸胶囊导航条 (全站一致)
+       ════════════════════════════════════════════════════════════════════ */
+    .quantum-nav-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: center;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    .quantum-nav {
+      pointer-events: auto;
+      width: min(880px, 100%);
+      height: 52px;
+      background: #000000;
+      border-radius: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px 0 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+    }
+
+    .quantum-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .quantum-logo {
+      width: 24px;
+      height: 24px;
+    }
+
+    .quantum-wordmark {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .quantum-wordmark sup {
+      font-size: 11px;
+      font-weight: 900;
+      position: relative;
+      top: -4px;
+      left: 1px;
+    }
+
+    .quantum-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .quantum-link {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: #ffffff;
+      text-decoration: none;
+      transition: color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .quantum-link:hover {
+      color: #38c6ec;
+    }
+
+    .quantum-link.active {
+      color: #38c6ec;
+      font-weight: 600;
+    }
+
+    .quantum-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 18px;
+      background: #ffffff;
+      color: #000000;
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: 20px;
+      text-decoration: none;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .quantum-cta:hover {
+      opacity: 0.92;
+      transform: scale(0.98);
+    }
+
+    .quantum-logout-btn {
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.15s ease, background 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .quantum-logout-btn:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.12);
+    }
+
+    /* 移动端汉堡包菜单按钮 */
+    .quantum-burger {
+      display: none;
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    /* 移动端抽屉菜单 */
+    .quantum-mobile-drawer {
+      display: none;
+      position: fixed;
+      top: 76px;
+      left: 20px;
+      right: 20px;
+      background: #000000;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+      z-index: 999;
+      flex-direction: column;
+      gap: 16px;
+      pointer-events: auto;
+    }
+
+    .quantum-mobile-drawer.open {
+      display: flex;
+    }
+
+    .quantum-mobile-drawer a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .quantum-mobile-drawer a.active {
+      color: #38c6ec;
+      background: rgba(56, 198, 236, 0.1);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       页面主体容器与清爽实用风格
+       ════════════════════════════════════════════════════════════════════ */
+    .main-container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 10px 24px 60px 24px;
+      flex: 1;
+    }
+
+    /* 顶部 Hero 横幅 */
+    .stations-hero {
+      background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 36px 36px 32px 36px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stations-hero::after {
+      content: "";
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(56, 198, 236, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e6f7ff;
+      border: 1px solid #bae0ff;
+      color: #0958d9;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+
+    .hero-title {
+      font-size: 30px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .hero-desc {
+      font-size: 14.5px;
+      color: #64748b;
+      max-width: 720px;
+      line-height: 1.6;
+    }
+
+    /* 城市筛选与检索栏 */
+    .filter-bar {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .filter-chips {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-right: 4px;
+    }
+
+    .chip-item {
+      display: inline-block;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+      background: #f1f5f9;
+      border-radius: 20px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+
+    .chip-item:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .chip-item.active {
+      background: #0f172a;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .search-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-input {
+      padding: 7px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      font-size: 13px;
+      outline: none;
+      width: 190px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .search-input:focus {
+      border-color: #0f172a;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.1);
+    }
+
+    .btn-search {
+      padding: 7px 16px;
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    .btn-search:hover {
+      opacity: 0.9;
+    }
+
+    /* 网点卡片网格 */
+    .station-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 24px;
+    }
+
+    .station-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+      border-top: 4px solid #0f172a;
+    }
+
+    .station-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+      border-color: #cbd5e1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.4;
+    }
+
+    .city-badge {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #334155;
+      margin-bottom: 18px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+
+    .info-icon {
+      font-size: 14px;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #64748b;
+      flex-shrink: 0;
+    }
+
+    .info-val-phone {
+      color: #0958d9;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .info-val-phone:hover {
+      text-decoration: underline;
+    }
+
+    .coverage-box {
+      font-size: 12.5px;
+      color: #475569;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .card-footer {
+      padding-top: 16px;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cert-status {
+      font-size: 12px;
+      color: #16a34a;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cert-dot {
+      width: 7px;
+      height: 7px;
+      background: #16a34a;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+    }
+
+    .btn-book {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 16px;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 20px;
+      text-decoration: none;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .btn-book:hover {
+      background: #334155;
+      transform: scale(0.98);
+    }
+
+    /* 空状态 */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 20px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+
+    .empty-subtitle {
+      font-size: 13.5px;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    .empty-btn {
+      display: inline-block;
+      padding: 8px 20px;
+      background: #0f172a;
+      color: #ffffff;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       响应式处理
+       ════════════════════════════════════════════════════════════════════ */
+    @media (max-width: 940px) {
+      .quantum-links {
+        display: none;
+      }
+      .quantum-burger {
+        display: block;
+      }
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-form {
+        justify-content: stretch;
+      }
+      .search-input {
+        flex: 1;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .station-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero-title {
+        font-size: 24px;
+      }
+      .stations-hero {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       QUANTUM² 统一纯黑药丸胶囊导航条
+       ════════════════════════════════════════════════════════════════════ -->
+  <div class="quantum-nav-wrapper">
+    <nav class="quantum-nav">
+      <!-- 品牌标识 -->
+      <a href="/portal" class="quantum-brand">
+        <svg class="quantum-logo" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="#38c6ec" stroke-width="2.5" />
+          <circle cx="12" cy="12" r="4" fill="#38c6ec" />
+        </svg>
+        <span class="quantum-wordmark">Quantum<sup>2</sup></span>
+      </a>
+
+      <!-- 核心四大链接 -->
+      <ul class="quantum-links">
+        <li><a href="/portal" class="quantum-link">服务大厅</a></li>
+        <li><a href="/safety" class="quantum-link">安全合规</a></li>
+        <li><a href="/recruit" class="quantum-link">师傅招募</a></li>
+        <li><a href="/ai-assistant" class="quantum-link">AI智能助手</a></li>
+      </ul>
+
+      <!-- 右侧后台入口 -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        {% if current_user and current_user.is_authenticated %}
+          <div style="display: flex; align-items: center; gap: 8px;">
+            {% if current_user.role == 'dispatcher' %}
+              <a href="/" class="quantum-cta" title="进入调度工作台">{{ current_user.name or current_user.username }} (调度看板)</a>
+            {% elif current_user.role == 'technician' %}
+              <a href="/tech" class="quantum-cta" title="进入技师工作台">{{ current_user.name or current_user.username }} (工作台)</a>
+            {% else %}
+              <a href="/query" class="quantum-cta" title="查看我的工单进度">{{ current_user.name or current_user.username }} (我的工单)</a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="quantum-logout-btn" title="退出登录">退出</a>
+          </div>
+        {% else %}
+          <a href="/login" class="quantum-cta">登录/注册</a>
+        {% endif %}
+        <button class="quantum-burger" onclick="toggleMenu()" aria-label="切换菜单">☰</button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- 移动端抽屉菜单 -->
+  <div class="quantum-mobile-drawer" id="mobileDrawer">
+    <a href="/portal">服务大厅</a>
+    <a href="/safety">安全合规</a>
+    <a href="/recruit">师傅招募</a>
+    <a href="/ai-assistant">AI智能助手</a>
+    {% if current_user and current_user.is_authenticated %}
+      {% if current_user.role == 'dispatcher' %}
+        <a href="/" style="background: #ffffff; color: #000000; text-align: center; font-weight: 600; margin-top: 8px;">{{ current_user.name or current_user.username }} (调度看板)</a>
+      {% elif current_user.role == 'technician' %}
+        <a href="/tech" style="background: #ffffff; color: #000000; text-align: center; font-weight: 600; margin-top: 8px;">{{ current_user.name or current_user.username }} (技师工作台)</a>
+      {% else %}
+        <a href="/query" style="background: #ffffff; color: #000000; text-align: center; font-weight: 600; margin-top: 8px;">{{ current_user.name or current_user.username }} (我的工单)</a>
+      {% endif %}
+      <a href="{{ url_for('auth.logout') }}" style="color: #ef4444; text-align: center; font-size: 13.5px; padding: 6px 0; text-decoration: none;">退出登录</a>
+    {% else %}
+      <a href="/login" style="background: #ffffff; color: #000000; text-align: center; font-weight: 600; margin-top: 8px;">登录/注册</a>
+    {% endif %}
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       页面主体：清爽实用的官方授权服务网点
+       ════════════════════════════════════════════════════════════════════ -->
+  <main class="main-container">
+    <!-- 顶部 Banner -->
+    <header class="stations-hero">
+      <div class="hero-tag">
+        <span>📍</span>
+        <span>官方授权体系 · 遍布核心城市</span>
+      </div>
+      <h1 class="hero-title">全国官方授权售后服务网点</h1>
+      <p class="hero-desc">
+        原厂认证工程师驻场、全原装配件库存储备、标准化无尘维修环境。支持到店送修检测与工程师就近极速上门。
+      </p>
+    </header>
+
+    <!-- 城市快捷检索胶囊栏 -->
+    <section class="filter-bar">
+      <div class="filter-chips">
+        <span class="filter-label">城市快速定位：</span>
+        <a href="/stations" class="chip-item {% if not current_city %}active{% endif %}">全部城市</a>
+        {% for c in city_list %}
+          <a href="/stations?city={{ c }}" class="chip-item {% if current_city == c %}active{% endif %}">
+            {{ c }}
+          </a>
+        {% endfor %}
+      </div>
+
+      <form action="/stations" method="GET" class="search-form">
+        <input 
+          type="text" 
+          name="city" 
+          value="{{ current_city or '' }}" 
+          class="search-input" 
+          placeholder="输入城市名称搜索..." 
+        />
+        <button type="submit" class="btn-search">检索</button>
+      </form>
+    </section>
+
+    <!-- 网点卡片列表 -->
+    <section class="station-grid">
+      {% for station in stations %}
+        <article class="station-card">
+          <div>
+            <div class="card-header">
+              <h2 class="card-title">{{ station.name }}</h2>
+              <span class="city-badge">{{ station.city }}</span>
+            </div>
+
+            <div class="info-list">
+              <div class="info-row">
+                <span class="info-icon">📍</span>
+                <div>
+                  <span class="info-label">详细地址：</span>
+                  <span>{{ station.address }}</span>
+                </div>
+              </div>
+
+              <div class="info-row">
+                <span class="info-icon">📞</span>
+                <div>
+                  <span class="info-label">服务热线：</span>
+                  <a href="tel:{{ station.phone }}" class="info-val-phone">{{ station.phone }}</a>
+                </div>
+              </div>
+
+              <div class="info-row">
+                <span class="info-icon">🕒</span>
+                <div>
+                  <span class="info-label">服务时间：</span>
+                  <span>{{ station.business_hours }}</span>
+                </div>
+              </div>
+            </div>
+
+            {% if station.coverage_area %}
+              <div class="coverage-box">
+                <strong style="color: #334155;">辐射区域：</strong>
+                <span>{{ station.coverage_area }}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="card-footer">
+            <div class="cert-status">
+              <span class="cert-dot"></span>
+              <span>官方直营认证站</span>
+            </div>
+            <a href="/portal" class="btn-book">预约网点送修</a>
+          </div>
+        </article>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3 class="empty-title">未检索到匹配的官方授权网点</h3>
+          <p class="empty-subtitle">建议尝试清空搜索条件查看全部，或直接在官方服务大厅提交上门维修工单。</p>
+          <a href="/stations" class="empty-btn">查看全部授权网点</a>
+        </div>
+      {% endfor %}
+    </section>
+  </main>
+
+  <script>
+    function toggleMenu() {
+      const drawer = document.getElementById('mobileDrawer');
+      if (drawer) {
+        drawer.classList.toggle('open');
+      }
+    }
+  </script>
+</body>
+</html>

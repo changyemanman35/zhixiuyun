@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}字典与价目{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="page-title">字典与价目</h1>
+
+    <!-- 配件价目表 -->
+    <div class="card">
+        <div class="card-header">配件价目表</div>
+        <details class="mb-8">
+            <summary>▸ 新增配件</summary>
+            <form action="/parts" method="post" style="max-width:400px;">
+                <div class="form-group">
+                    <label>名称</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>单价（元）</label>
+                    <input type="number" name="unit_price" step="0.01" min="0" required>
+                </div>
+                <button type="submit" class="btn btn-primary">添加</button>
+            </form>
+        </details>
+        <table>
+            <tr><th>名称</th><th>单价</th><th>状态</th><th>引用工单</th><th>操作</th></tr>
+            {% for part in parts %}
+            <tr>
+                <td>{{ part.name }}</td>
+                <td>¥{{ "%.2f"|format(part.unit_price) }}</td>
+                <td>{% if part.active %}<span class="text-success">启用</span>{% else %}<span class="text-muted">已停用</span>{% endif %}</td>
+                <td>{{ part.used_count }}</td>
+                <td>
+                    <div class="btn-group">
+                        <details>
+                            <summary class="btn btn-sm btn-outline">编辑</summary>
+                            <form action="/parts/{{ part.id }}/edit" method="post" style="padding:8px;">
+                                <input type="text" name="name" value="{{ part.name }}" class="mb-8">
+                                <input type="number" name="unit_price" step="0.01" value="{{ part.unit_price }}" class="mb-8">
+                                <button type="submit" class="btn btn-sm btn-primary">保存</button>
+                            </form>
+                        </details>
+                        <form action="/parts/{{ part.id }}/toggle" method="post">
+                            <button type="submit" class="btn btn-sm {% if part.active %}btn-warn{% else %}btn-success{% endif %}">
+                                {% if part.active %}停用{% else %}启用{% endif %}
+                            </button>
+                        </form>
+                        {% if part.used_count == 0 %}
+                        <form action="/parts/{{ part.id }}/delete" method="post">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定删除？')">删除</button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-sm btn-disabled" disabled title="已被 {{ part.used_count }} 张工单引用，建议改为停用">删除</button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- 故障分类字典 -->
+    <div class="card">
+        <div class="card-header">故障分类字典</div>
+        <details class="mb-8">
+            <summary>▸ 新增故障类型</summary>
+            <form action="/fault-types" method="post" style="max-width:400px;">
+                <div class="form-group">
+                    <label>名称</label>
+                    <input type="text" name="name" required>
+                </div>
+                <button type="submit" class="btn btn-primary">添加</button>
+            </form>
+        </details>
+        <table>
+            <tr><th>名称</th><th>状态</th><th>引用工单</th><th>操作</th></tr>
+            {% for ft in fault_types %}
+            <tr>
+                <td>{{ ft.name }}</td>
+                <td>{% if ft.active %}<span class="text-success">启用</span>{% else %}<span class="text-muted">已停用</span>{% endif %}</td>
+                <td>{{ ft.used_count }}</td>
+                <td>
+                    <div class="btn-group">
+                        <details>
+                            <summary class="btn btn-sm btn-outline">编辑</summary>
+                            <form action="/fault-types/{{ ft.id }}/edit" method="post" style="padding:8px;">
+                                <input type="text" name="name" value="{{ ft.name }}" class="mb-8">
+                                <button type="submit" class="btn btn-sm btn-primary">保存</button>
+                            </form>
+                        </details>
+                        <form action="/fault-types/{{ ft.id }}/toggle" method="post">
+                            <button type="submit" class="btn btn-sm {% if ft.active %}btn-warn{% else %}btn-success{% endif %}">
+                                {% if ft.active %}停用{% else %}启用{% endif %}
+                            </button>
+                        </form>
+                        {% if ft.used_count == 0 %}
+                        <form action="/fault-types/{{ ft.id }}/delete" method="post">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定删除？')">删除</button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-sm btn-disabled" disabled title="已被 {{ ft.used_count }} 张工单引用，无法删除">删除</button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

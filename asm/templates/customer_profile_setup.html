@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block title %}完善个人基本信息 ── 智修云客户服务向导{% endblock %}
+
+{% block content %}
+<style>
+  /* ══════════════════════════════════════════════════════════════
+     阿里云风格：客户个人基本信息与默认服务地址完善向导
+     ══════════════════════════════════════════════════════════════ */
+  .app-header-pill-wrapper {
+    display: none !important;
+  }
+
+  .portal-bleed-wrapper, .container-full-bleed {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .cust-wizard-viewport {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #0f172a;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .cust-wizard-mesh {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .cust-wizard-mesh::before {
+    content: '';
+    position: absolute;
+    top: -5%;
+    left: 25%;
+    width: 55vw;
+    height: 380px;
+    background: radial-gradient(ellipse at center, rgba(199, 230, 255, 0.6) 0%, rgba(224, 215, 255, 0.35) 45%, rgba(248, 250, 252, 0) 75%);
+    filter: blur(60px);
+  }
+
+  /* 顶部 Header */
+  .cust-wizard-header {
+    height: 64px;
+    padding: 0 40px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 10;
+  }
+  .ali-logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .ali-brand-text {
+    font-size: 19px;
+    font-weight: 700;
+    color: #ff6a00;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .ali-brand-text span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0284c7;
+    background: #e0f2fe;
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+  .cust-skip-btn {
+    font-size: 13.5px;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cust-skip-btn:hover {
+    color: #0064c8;
+    text-decoration: underline;
+  }
+
+  /* 中间主体向导 */
+  .cust-wizard-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 64px;
+    position: relative;
+    z-index: 5;
+  }
+
+  /* 步骤条 Stepper */
+  .cust-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 32px;
+  }
+  .cust-step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: #64748b;
+    font-weight: 500;
+  }
+  .cust-step-item.done {
+    color: #10b981;
+    font-weight: 600;
+  }
+  .cust-step-item.active {
+    color: #0064c8;
+    font-weight: 700;
+  }
+  .cust-step-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #64748b;
+  }
+  .cust-step-item.done .cust-step-badge {
+    background: #10b981;
+    color: #ffffff;
+  }
+  .cust-step-item.active .cust-step-badge {
+    background: #0064c8;
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 100, 200, 0.2);
+  }
+  .cust-step-line {
+    flex: 1;
+    height: 2px;
+    background: #e2e8f0;
+    max-width: 60px;
+  }
+  .cust-step-line.done {
+    background: #10b981;
+  }
+
+  /* 居中向导白卡片 */
+  .cust-card {
+    width: 100%;
+    max-width: 720px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    padding: 36px 44px;
+    position: relative;
+  }
+
+  .cust-card-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+  }
+  .cust-card-subtitle {
+    font-size: 13.5px;
+    color: #64748b;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .cust-card-subtitle span {
+    color: #0064c8;
+    font-weight: 600;
+  }
+
+  .cust-field {
+    margin-bottom: 20px;
+  }
+  .cust-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+  }
+  .cust-label .required {
+    color: #ef4444;
+  }
+  .cust-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #0f172a;
+    background: #ffffff;
+    box-sizing: border-box;
+    transition: all 0.2s;
+  }
+  .cust-input:focus {
+    outline: none;
+    border-color: #0064c8;
+    box-shadow: 0 0 0 3px rgba(0, 100, 200, 0.15);
+  }
+
+  /* 快捷填入示例地址 */
+  .quick-addr-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #64748b;
+    flex-wrap: wrap;
+  }
+  .quick-addr-tag {
+    color: #0064c8;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .cust-benefit-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 24px 0;
+    font-size: 13px;
+    color: #166534;
+    line-height: 1.6;
+  }
+
+  .cust-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 24px;
+    margin-top: 12px;
+  }
+  .cust-submit-btn {
+    height: 44px;
+    padding: 0 32px;
+    background: #0064c8;
+    border: 1px solid #0064c8;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  .cust-submit-btn:hover {
+    background: #0050a3;
+    box-shadow: 0 4px 12px rgba(0, 100, 200, 0.25);
+  }
+
+  @media (max-width: 768px) {
+    .cust-card { padding: 24px 20px; }
+    .cust-actions { flex-direction: column-reverse; gap: 14px; }
+    .cust-submit-btn { width: 100%; }
+  }
+</style>
+
+<div class="cust-wizard-viewport">
+  <div class="cust-wizard-mesh"></div>
+
+  <!-- 顶部 Header -->
+  <header class="cust-wizard-header">
+    <a href="/portal" class="ali-logo-group">
+      <div class="ali-brand-text">
+        智修云
+        <span>客户服务向导</span>
+      </div>
+    </a>
+    <a href="/orders/new" class="cust-skip-btn">
+      跳过，稍后在报修时填写 &gt;
+    </a>
+  </header>
+
+  <!-- 中间主体向导 -->
+  <main class="cust-wizard-body">
+    <!-- 步骤指示器 -->
+    <div class="cust-stepper">
+      <div class="cust-step-item done">
+        <div class="cust-step-badge">✓</div>
+        <span>账号注册完成</span>
+      </div>
+      <div class="cust-step-line done"></div>
+      <div class="cust-step-item active">
+        <div class="cust-step-badge">2</div>
+        <span>完善默认服务信息</span>
+      </div>
+      <div class="cust-step-line"></div>
+      <div class="cust-step-item">
+        <div class="cust-step-badge">3</div>
+        <span>一键极速报修</span>
+      </div>
+    </div>
+
+    <!-- 居中向导白卡片 -->
+    <div class="cust-card">
+      <h2 class="cust-card-title">完善您的个人基本信息</h2>
+      <p class="cust-card-subtitle">
+        设置您的常用称呼与默认上门地址后，后续在 <span>AI智能报修</span> 时将无需重复手填，系统将<strong>自动带出并一键确认</strong>，如同滴滴打车般秒级发单。
+      </p>
+
+      <form method="POST" action="{{ url_for('auth.customer_profile_setup') }}" id="custProfileForm">
+        <!-- 姓名 / 称呼 -->
+        <div class="cust-field">
+          <label class="cust-label">您的姓名 / 称呼 <span class="required">*</span></label>
+          <input 
+            type="text" 
+            name="name" 
+            class="cust-input" 
+            value="{{ cust.name if cust else (user.name or '') }}" 
+            placeholder="例如：张先生 / 李女士" 
+            required
+          >
+        </div>
+
+        <!-- 联系手机号 -->
+        <div class="cust-field">
+          <label class="cust-label">常用联系手机号 <span class="required">*</span></label>
+          <input 
+            type="tel" 
+            name="phone" 
+            class="cust-input" 
+            value="{{ cust.phone if cust else (user.phone or '') }}" 
+            placeholder="请输入11位常用手机号码" 
+            required
+          >
+        </div>
+
+        <!-- 默认上门详细地址 -->
+        <div class="cust-field">
+          <label class="cust-label">默认上门服务地址 (含省市区、小区及门牌号) <span class="required">*</span></label>
+          <input 
+            type="text" 
+            name="address" 
+            id="addrInput" 
+            class="cust-input" 
+            value="{{ cust.address if cust else '' }}" 
+            placeholder="例如：深圳市南山区高新南九道科技园南区 5 栋 602 室" 
+            required
+          >
+          <div class="quick-addr-bar">
+            <span>快捷填入示例：</span>
+            <span class="quick-addr-tag" onclick="document.getElementById('addrInput').value='深圳市南山区粤海街道科技园南区5栋602室'">科技园小区</span>
+            <span>·</span>
+            <span class="quick-addr-tag" onclick="document.getElementById('addrInput').value='北京市朝阳区高碑店大悦城金地花园2单元1101室'">大悦城金地花园</span>
+            <span>·</span>
+            <span class="quick-addr-tag" onclick="document.getElementById('addrInput').value='上海市浦东新区张江高科张衡路88号3栋401室'">张江高科人才公寓</span>
+          </div>
+        </div>
+
+        <!-- 益处背书 -->
+        <div class="cust-benefit-box">
+          🛡️ <strong>一键确认保障：</strong>您的地址信息仅在发起报修时用于师傅上门排查，平台全程实施数据加密与虚拟防骚扰保护，不会向任何无关第三方泄露。
+        </div>
+
+        <!-- 底部动作条 -->
+        <div class="cust-actions">
+          <a href="/orders/new" class="cust-skip-btn">暂不完善，直接前往报修 &gt;</a>
+          <button type="submit" class="cust-submit-btn">
+            保存信息并开启极速报修
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+{% endblock %}

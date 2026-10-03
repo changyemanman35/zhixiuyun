@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+
+{% block title %}安全合规与隐私保护 ── 家修无忧平台{% endblock %}
+
+{% block content %}
+<!-- Google Fonts: Figtree Variable -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@100..900&display=block" rel="stylesheet">
+
+<style>
+  :root {
+    --font-quantum: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+
+    --fs-display : clamp(32px, 3.8vw, 55.7px);
+    --fs-title   : calc(var(--dp) * 20);
+    --fs-heading : calc(var(--dp) * 17);
+    --fs-body    : 16.1px;
+    --fs-eyebrow : calc(var(--dp) * 15.8);
+    --fs-ui      : 15px;
+    --fs-meta    : calc(var(--dp) * 14.3);
+    --fs-item    : calc(var(--dp) * 12.9);
+    --fs-caption : calc(var(--dp) * 12.2);
+    --fs-tab     : calc(var(--dp) * 12.1);
+    --fs-sup     : 11.4px;
+    --fs-wordmark: 17.1px;
+
+    --fw-light    : 388;
+    --fw-regular  : 470;
+    --fw-medium   : 500;
+    --fw-semibold : 511;
+    --fw-bold     : 577;
+    --fw-black    : 783;
+
+    --tr-display : -0.0572em;
+    --tr-title   : -0.0570em;
+    --tr-heading : -0.0200em;
+    --tr-body    : -0.0475em;
+    --tr-eyebrow : -0.0293em;
+    --tr-ui      : -0.0080em;
+    --tr-cta     : -0.0200em;
+    --tr-meta    : -0.0447em;
+    --tr-item    : -0.0287em;
+    --tr-caption : -0.0295em;
+    --tr-tab     : -0.0398em;
+
+    --lh-display : 1.15;
+    --lh-body    : 22px;
+    --lh-flat    : 1;
+
+    --c-ink      : #000000;
+    --c-ink-soft : #2e2e2e;
+    --c-muted    : #8c9096;
+    --c-on-dark  : #ffffff;
+    --c-on-light : #000000;
+    --c-surface-card  : #f2f2f2;
+    --c-surface-panel : #ffffff;
+    --c-border-row    : #ededed;
+    --c-accent        : #38c6ec;
+
+    --u  : min(548px, 90vw);
+    --dp : calc(var(--u) / 548);
+
+    --ease-reveal : cubic-bezier(.22, 1, .36, 1);
+    --ease-settle : cubic-bezier(.16, 1, .30, 1);
+    --dur-head    : .92s;
+    --dur-copy    : .62s;
+    --dur-cta     : .58s;
+    --dur-panel   : .94s;
+  }
+
+  .safety-wrapper {
+    font-family: var(--font-quantum);
+    background: #ffffff;
+    color: var(--c-ink);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Quantum Hero Container */
+  .quantum-hero-stage {
+    position: relative;
+    width: 100%;
+    min-height: 820px;
+    background: #ffffff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 40px;
+  }
+
+  .q-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0f7ff;
+    border: 1px solid #d0e6ff;
+    color: #0070f3;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 22px;
+    letter-spacing: -0.01em;
+  }
+
+  .q-display {
+    font-size: var(--fs-display);
+    font-weight: var(--fw-regular);
+    letter-spacing: var(--tr-display);
+    line-height: var(--lh-display);
+    color: var(--c-ink);
+    text-align: center;
+    white-space: pre-line;
+    margin: 0 0 16px 0;
+  }
+
+  .q-body {
+    font-size: var(--fs-body);
+    font-weight: var(--fw-regular);
+    letter-spacing: var(--tr-body);
+    line-height: var(--lh-body);
+    color: #4a5058;
+    text-align: center;
+    white-space: pre-line;
+    max-width: 680px;
+    margin: 0 0 28px 0;
+    padding: 0 20px;
+  }
+
+  .q-btn-hero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 28px;
+    border-radius: 20px;
+    background: var(--c-ink);
+    color: var(--c-on-dark);
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--tr-cta);
+    text-decoration: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    z-index: 10;
+  }
+  .q-btn-hero:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    color: #fff;
+  }
+
+  /* Full Bleed Cyan Video Band */
+  .q-band {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    margin-top: 52px;
+    background-color: #0db5ed;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+  }
+
+  .q-band__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    z-index: 0;
+  }
+
+  /* Fixed Geometry Product Mockup Card */
+  .q-card {
+    position: absolute;
+    top: -80px;
+    width: var(--u);
+    height: calc(var(--dp) * 340);
+    background: var(--c-surface-card);
+    border-radius: calc(var(--dp) * 16);
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.6),
+      0 0 calc(var(--dp)*9) calc(var(--dp)*3) rgba(255,255,255,.5),
+      0 calc(var(--dp)*22) calc(var(--dp)*64) rgba(2,72,105,.18);
+    z-index: 10;
+  }
+
+  .q-eyebrow {
+    position: absolute;
+    left: calc(var(--dp) * 19);
+    top: calc(var(--dp) * 21);
+    font-size: var(--fs-eyebrow);
+    font-weight: var(--fw-light);
+    letter-spacing: var(--tr-eyebrow);
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+
+  .q-cardtitle {
+    position: absolute;
+    left: calc(var(--dp) * 18);
+    top: calc(var(--dp) * 47);
+    font-size: var(--fs-title);
+    font-weight: var(--fw-light);
+    letter-spacing: var(--tr-title);
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+
+  .q-meta {
+    position: absolute;
+    left: calc(var(--dp) * 15);
+    top: calc(var(--dp) * 81);
+    height: calc(var(--dp) * 28);
+    display: flex;
+    align-items: center;
+  }
+
+  .q-avatars {
+    position: relative;
+    width: calc(var(--dp) * 48);
+    height: calc(var(--dp) * 28);
+  }
+  .q-av {
+    position: absolute;
+    top: 0;
+    width: calc(var(--dp) * 28);
+    height: calc(var(--dp) * 28);
+    border-radius: 50%;
+    border: max(1px, calc(var(--dp) * 2)) solid #fff;
+    background-size: cover;
+  }
+  .q-av1 { left: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="%230ea5e9"/><circle cx="20" cy="15" r="9" fill="%23d9a882"/><ellipse cx="20" cy="38" rx="14" ry="13" fill="%230369a1"/></svg>'); }
+  .q-av2 { left: calc(var(--dp) * 11); background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="%2310b981"/><circle cx="20" cy="16" r="9" fill="%23e8c4a0"/><ellipse cx="20" cy="38" rx="14" ry="13" fill="%23047857"/></svg>'); }
+  .q-av3 { left: calc(var(--dp) * 22); background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="%236366f1"/><circle cx="20" cy="15" r="9" fill="%23dda882"/><ellipse cx="20" cy="38" rx="14" ry="13" fill="%234338ca"/></svg>'); }
+
+  .q-clockicon {
+    margin-left: calc(var(--dp) * 12);
+    width: calc(var(--dp) * 14);
+    height: calc(var(--dp) * 14);
+  }
+
+  .q-metatext {
+    margin-left: calc(var(--dp) * 8);
+    font-size: var(--fs-meta);
+    font-weight: var(--fw-light);
+    letter-spacing: var(--tr-meta);
+    color: var(--c-muted);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .q-sep { padding: 0 calc(var(--dp) * 8); }
+
+  .q-tabs {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--dp) * 129);
+    height: calc(var(--dp) * 30);
+  }
+  .q-tab {
+    position: absolute;
+    top: 0;
+    height: calc(var(--dp) * 30);
+    display: flex;
+    align-items: center;
+    font-family: inherit;
+    font-size: var(--fs-tab);
+    font-weight: var(--fw-light);
+    letter-spacing: var(--tr-tab);
+    color: var(--c-muted);
+    border: 0;
+    background: none;
+    padding: 0;
+    white-space: nowrap;
+    cursor: default;
+  }
+  .q-tab.is-active {
+    left: calc(var(--dp) * 19);
+    padding: 0 calc(var(--dp) * 16);
+    font-weight: var(--fw-medium);
+    color: var(--c-ink-soft);
+    background: #ffffff;
+    border-radius: calc(var(--dp) * 8) calc(var(--dp) * 8) 0 0;
+  }
+  .q-tab.is-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: calc(var(--dp) * 12);
+    right: calc(var(--dp) * 13);
+    height: max(1px, calc(var(--dp) * 2));
+    background: var(--c-accent);
+  }
+  .q-tab.t2 { left: calc(var(--dp) * 136); }
+  .q-tab.t3 { left: calc(var(--dp) * 228); }
+  .q-tab.t4 { left: calc(var(--dp) * 324); }
+
+  .q-panel {
+    position: absolute;
+    left: calc(var(--dp) * 19);
+    top: calc(var(--dp) * 160);
+    width: calc(var(--dp) * 511);
+    height: calc(var(--dp) * 169);
+    background: var(--c-surface-panel);
+    border-radius: 0 calc(var(--dp) * 8) calc(var(--dp) * 8) calc(var(--dp) * 8);
+  }
+  .q-panel__heading {
+    position: absolute;
+    left: calc(var(--dp) * 12);
+    top: calc(var(--dp) * 10);
+    font-size: var(--fs-heading);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tr-heading);
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+
+  .q-row {
+    position: absolute;
+    left: calc(var(--dp) * 13);
+    width: calc(var(--dp) * 485);
+    height: calc(var(--dp) * 46);
+    background: #ffffff;
+    border: 1px solid var(--c-border-row);
+    border-radius: calc(var(--dp) * 8);
+    box-shadow: 0 1px calc(var(--dp) * 2) rgba(0,0,0,.03);
+  }
+  .q-row.row1 { top: calc(var(--dp) * 36); }
+  .q-row.row2 { top: calc(var(--dp) * 87); }
+
+  .q-dot {
+    position: absolute;
+    left: calc(var(--dp) * 7);
+    top: calc(var(--dp) * 7);
+    width: calc(var(--dp) * 15);
+    height: calc(var(--dp) * 15);
+  }
+  .q-rowtitle {
+    position: absolute;
+    left: calc(var(--dp) * 33);
+    top: calc(var(--dp) * 10);
+    font-size: var(--fs-item);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--tr-item);
+    color: var(--c-ink);
+    white-space: nowrap;
+  }
+  .q-rowowner {
+    position: absolute;
+    left: calc(var(--dp) * 33);
+    top: calc(var(--dp) * 27);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-light);
+    letter-spacing: var(--tr-caption);
+    color: var(--c-muted);
+    white-space: nowrap;
+  }
+
+  /* Entrance animations */
+  @keyframes enter-wipe { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0% 0); } }
+  @keyframes enter-rise14 { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes enter-rise22 { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+  [data-enter="pending"] .q-display { clip-path: inset(0 0 100% 0); }
+  [data-enter="pending"] .q-body { opacity: 0; transform: translateY(14px); }
+  [data-enter="pending"] .q-btn-hero { opacity: 0; transform: translateY(14px); }
+  [data-enter="pending"] .q-card { opacity: 0; transform: translateY(22px); }
+
+  [data-enter="run"] .q-display { animation: enter-wipe var(--dur-head) var(--ease-reveal) .2s both; }
+  [data-enter="run"] .q-body { animation: enter-rise14 var(--dur-copy) var(--ease-settle) .45s both; }
+  [data-enter="run"] .q-btn-hero { animation: enter-rise14 var(--dur-cta) var(--ease-settle) .6s both; }
+  [data-enter="run"] .q-card { animation: enter-rise22 var(--dur-panel) var(--ease-settle) .72s both; }
+</style>
+
+<div class="safety-wrapper" id="safety-root" data-enter="pending">
+  <!-- 1. QUANTUM² 科技感首屏开篇 (Hero + Video Band + Product Card) -->
+  <section class="quantum-hero-stage">
+    <div class="q-badge">
+      🛡️ Quantum² 平台合规白皮书 · 资金托管与双向隐私保护
+    </div>
+
+    <h1 class="q-display">构建家电维修领域的
+透明信任与安全基石</h1>
+
+    <p class="q-body">坚持去中介化的轻资产邻里撮合模式。银行级资金双向托管，全链路双向敏感隐私脱敏，
+彻底终结传统维修行业的乱收费与跳单风险，守护客户与师傅的每一步权益。</p>
+
+    <a href="#compliance-matrix" class="q-btn-hero">查看四大合规保障 ↓</a>
+
+    <!-- Cyan Full-bleed Video Band -->
+    <div class="q-band">
+      <video class="q-band__video" autoplay muted loop playsinline poster="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_125039_45a71f04-36dd-4620-99d8-7526316d439e.png">
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_125119_4963ddd4-c287-4044-b014-b68943cdd8bd.mp4" type="video/mp4">
+      </video>
+
+      <!-- Fixed-Geometry Mockup Card -->
+      <div class="q-card" aria-label="安全合规审计与履约监控卡片">
+        <div class="q-eyebrow"># 安全审计 2026-X / 履约与合规存证</div>
+        <div class="q-cardtitle">资金托管与现场核销中心</div>
+        <div class="q-meta">
+          <div class="q-avatars">
+            <div class="q-av q-av1" title="客户终端"></div>
+            <div class="q-av q-av2" title="认证技师"></div>
+            <div class="q-av q-av3" title="资金托管专户"></div>
+          </div>
+          <svg class="q-clockicon" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="5.7" stroke="#b8b8b8" stroke-width="1.1"/>
+            <path d="M7 3.8 V7 H9.4" stroke="#b8b8b8" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+          <div class="q-metatext">
+            实时安全守护中<span class="q-sep">&bull;</span>银行级托管<span class="q-sep">&bull;</span>双向脱敏已生效
+          </div>
+        </div>
+
+        <div class="q-tabs">
+          <button type="button" class="q-tab is-active">合规监控</button>
+          <button type="button" class="q-tab t2">双向脱敏</button>
+          <button type="button" class="q-tab t3">核销打卡</button>
+          <button type="button" class="q-tab t4">7天存证</button>
+        </div>
+
+        <div class="q-panel">
+          <div class="q-panel__heading">实时合规审计动态</div>
+
+          <div class="q-row row1">
+            <svg class="q-dot" viewBox="0 0 15 15">
+              <circle cx="7.5" cy="7.5" r="4.5" fill="#38c6ec"/>
+            </svg>
+            <div class="q-rowtitle">¥30 上门排查费进入第三方托管（工单 #202603300001）</div>
+            <div class="q-rowowner">监管策略: 现场 6 位核销码核验后划拨 · 平台 0 抽成</div>
+          </div>
+
+          <div class="q-row row2">
+            <svg class="q-dot" viewBox="0 0 15 15">
+              <circle cx="7.5" cy="7.5" r="4.5" fill="#10b981"/>
+            </svg>
+            <div class="q-rowtitle">客户与师傅号码全链路加密脱敏 (138****5678)</div>
+            <div class="q-rowowner">隐私机制: 详细门牌在师傅出工前 15 分钟解冻 · 防转卖防骚扰</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 四大安全保障矩阵 (向下平滑延伸) -->
+  <div id="compliance-matrix" style="max-width: 1140px; margin: 60px auto 40px; padding: 0 24px;">
+    <div style="text-align: center; margin-bottom: 48px;">
+      <h2 style="font-size: 32px; font-weight: 800; color: #111827; margin: 0 0 12px 0; letter-spacing: -0.02em;">
+        四大核心安全合规保障矩阵
+      </h2>
+      <p style="font-size: 15px; color: #6b7280; max-width: 640px; margin: 0 auto; line-height: 1.6;">
+        围绕“资金安全、信息隐私、面对面自主议价、闭环存证”打造透明合规闭环，全面护航邻里安心体验。
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 24px; margin-bottom: 50px;">
+      <!-- 保障 1：双向隐私与数据脱敏保护 -->
+      <div style="padding: 32px; border-radius: 16px; border: 1px solid #e5e7eb; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.03); transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+            🔒
+          </div>
+          <div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #111827; margin: 0;">客户与技师双向隐私防护</h3>
+            <div style="font-size: 13px; color: #9ca3af; margin-top: 2px;">全链路加密 · 敏感信息脱敏隔离</div>
+          </div>
+        </div>
+        <div style="font-size: 14px; color: #4b5563; line-height: 1.8;">
+          <ul style="padding-left: 20px; margin: 0;">
+            <li><strong>手机号全端脱敏</strong>：平台在查询、展示、报表及工单中统一采用 <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; color: #0284c7;">138****5678</code> 规则展示，杜绝用户信息转手贩卖；</li>
+            <li><strong>地址分阶段权限开放</strong>：师傅接单前仅能查看客户所在的大致商圈与直线距离（如：朝阳区望京街道 · 距您1.2km），只有在正式接单并即将上门时方能获得门牌导航；</li>
+            <li><strong>技师实名认证与背景筛查</strong>：所有入驻师傅必须通过实名公安人脸核验与无犯罪记录筛查，持特种作业或高级电工证上岗，让家门口的维修更安心。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 保障 2：线上 ¥30 上门排查费安全托管机制 -->
+      <div style="padding: 32px; border-radius: 16px; border: 1px solid #e5e7eb; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.03); transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+            💳
+          </div>
+          <div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #111827; margin: 0;">¥30 线上托管 · 防线下跳单乱加价</h3>
+            <div style="font-size: 13px; color: #9ca3af; margin-top: 2px;">资金双向安全锁定 · 现场 6 位核销码打卡</div>
+          </div>
+        </div>
+        <div style="font-size: 14px; color: #4b5563; line-height: 1.8;">
+          <ul style="padding-left: 20px; margin: 0;">
+            <li><strong>资金双向托管</strong>：客户下单时在线支付的 ¥30.00 基础排查费直接进入第三方银行托管专户，未打卡核销前师傅无法提现；</li>
+            <li><strong>未到场随时全额退款</strong>：若师傅未履约或因突发情况无法按时到场，客户在后台可一键极速退还已预付费用；</li>
+            <li><strong>6 位动态核销码打卡</strong>：师傅携证上门后，必须现场向客户核对并录入专属大写核销码（如 <code style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 4px; font-weight: 700; color: #16a34a;">A9B3F8</code>），系统方解冻 ¥25 出工劳务费到师傅钱包，平台严禁并杜绝师傅私下向客户索取线下出工费。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 保障 3：深度维修现场透明协商与自愿原则 -->
+      <div style="padding: 32px; border-radius: 16px; border: 1px solid #e5e7eb; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.03); transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #fffbeb; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+            🤝
+          </div>
+          <div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #111827; margin: 0;">深度维修面对面自决 · 零中介差价</h3>
+            <div style="font-size: 13px; color: #9ca3af; margin-top: 2px;">自主透明议价 · 平台绝不从中抽成盘剥</div>
+          </div>
+        </div>
+        <div style="font-size: 14px; color: #4b5563; line-height: 1.8;">
+          <ul style="padding-left: 20px; margin: 0;">
+            <li><strong>师傅排查后出示诊断</strong>：师傅到场使用专业设备查明故障后，必须向客户详尽说明机器损坏原因，并出示配件更换建议与工时报价；</li>
+            <li><strong>自主决定修与不修</strong>：若师傅现场报价超出客户心理预算，客户可直接选择放弃维修。除已核销的 ¥30 上门出工费外，客户<strong>无需再支付任何额外费用</strong>，彻底消除被强制消费的担忧；</li>
+            <li><strong>线下维修款 100% 归师傅</strong>：后续深度维修与配件费由双方在线下脱离平台自愿支付，平台 0 抽成，保障师傅付出劳动的完整收益，从根源杜绝技师因被平台抽成过高而故意抬高配件价格。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 保障 4：闭环存证与售后返修保障 -->
+      <div style="padding: 32px; border-radius: 16px; border: 1px solid #e5e7eb; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.03); transition: transform 0.2s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #faf5ff; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+            📜
+          </div>
+          <div>
+            <h3 style="font-size: 18px; font-weight: 700; color: #111827; margin: 0;">区块链式事件存证 · 7 天返修监督</h3>
+            <div style="font-size: 13px; color: #9ca3af; margin-top: 2px;">日志只增不改 · 争议快速绿色调处</div>
+          </div>
+        </div>
+        <div style="font-size: 14px; color: #4b5563; line-height: 1.8;">
+          <ul style="padding-left: 20px; margin: 0;">
+            <li><strong>全生命周期只读审计日志</strong>：工单的每一个流转动作（创建、派工、现场打卡、完工、取消、返工）均被永久存证于系统日志，双方均无法单方篡改；</li>
+            <li><strong>未修好 7 天内免费返工申请</strong>：客户在完工后若发现故障复发，可在工单进度页一键发起“返工申请”，师傅须于 24 小时内免费二次上门排查；</li>
+            <li><strong>服务评价与失信黑名单机制</strong>：客户真实评分将直接影响师傅的邻里口碑与派单权重；若发现私下加收上门费或恶意损坏电器的师傅，平台将永久封禁并扣除保障金。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部保障声明与快速入口 -->
+    <div style="background: #f9fafb; border: 1px dashed #d1d5db; border-radius: 16px; padding: 36px 24px; text-align: center;">
+      <h4 style="font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 10px 0;">让家电维修回归纯粹与诚信</h4>
+      <p style="font-size: 14px; color: #6b7280; max-width: 600px; margin: 0 auto 20px auto; line-height: 1.6;">
+        我们不赚暴利差价，只做邻里与良心工匠之间最可靠的安全桥梁。透明计价、现场核销、资金双向托管，让每一次上门都安心无忧。
+      </p>
+      <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <a href="/orders/new" class="btn btn-primary" style="padding: 10px 28px; font-weight: 600; border-radius: 20px;">⚡ 立即体验极速报修</a>
+        <a href="/recruit" class="btn btn-default" style="padding: 10px 28px; border-radius: 20px;">👨‍🔧 了解师傅入驻待遇</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 页面加载触发优雅入场动画
+  (function() {
+    var root = document.getElementById('safety-root');
+    if (!root) return;
+    requestAnimationFrame(function() {
+      root.setAttribute('data-enter', 'run');
+    });
+
+    // 锚点平滑滚动
+    var anchor = document.querySelector('a[href="#compliance-matrix"]');
+    if (anchor) {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = document.getElementById('compliance-matrix');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}
