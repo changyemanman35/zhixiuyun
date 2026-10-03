@@ -811,6 +811,379 @@
       .wizard-glass-card { padding: 20px 16px; }
       .step-tracker-bar { overflow-x: auto; }
     }
+
+    /* ══════════════════════════════════════════════════════════════
+       1. 豆包 3D 拟态发光小精灵系统 (右下角常驻悬浮伴侣)
+       ══════════════════════════════════════════════════════════════ */
+    .doubao-companion-box {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      pointer-events: none;
+    }
+    .doubao-speech-bubble {
+      pointer-events: auto;
+      background: rgba(18, 14, 38, 0.88);
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 20px rgba(168, 85, 247, 0.25);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 18px 18px 4px 18px;
+      padding: 12px 18px;
+      max-width: 290px;
+      margin-bottom: 12px;
+      color: #f3e8ff;
+      font-size: 13.5px;
+      line-height: 1.55;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(10px) scale(0.96);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .doubao-speech-bubble.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    .doubao-speech-bubble::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      right: 28px;
+      width: 12px;
+      height: 12px;
+      background: rgba(18, 14, 38, 0.95);
+      border-right: 1px solid rgba(168, 85, 247, 0.45);
+      border-bottom: 1px solid rgba(168, 85, 247, 0.45);
+      transform: rotate(45deg);
+    }
+    .doubao-sphere-wrap {
+      pointer-events: auto;
+      position: relative;
+      width: 68px;
+      height: 68px;
+      cursor: pointer;
+      user-select: none;
+      animation: doubaoFloat 3.6s ease-in-out infinite;
+    }
+    @keyframes doubaoFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-7px) rotate(2deg); }
+    }
+    .doubao-halo {
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(99, 102, 241, 0.15) 50%, transparent 72%);
+      animation: doubaoPulse 2.8s ease-in-out infinite;
+      z-index: 1;
+    }
+    @keyframes doubaoPulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.18); opacity: 1; }
+    }
+    .doubao-body {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #ffffff 0%, #e0e7ff 22%, #a855f7 70%, #4c1d95 100%);
+      box-shadow: inset 0 -6px 12px rgba(30, 10, 60, 0.7), inset 0 4px 8px rgba(255, 255, 255, 0.9), 0 8px 24px rgba(168, 85, 247, 0.45);
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: transform 0.25s ease;
+    }
+    .doubao-sphere-wrap:hover .doubao-body {
+      transform: scale(1.08);
+    }
+    .doubao-face {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: -2px;
+    }
+    .doubao-eye {
+      width: 7.5px;
+      height: 11px;
+      background: #1e1b4b;
+      border-radius: 50%;
+      position: relative;
+      animation: doubaoBlink 4s infinite;
+    }
+    .doubao-eye::after {
+      content: "";
+      position: absolute;
+      top: 1.5px;
+      left: 1.5px;
+      width: 3px;
+      height: 3px;
+      background: #ffffff;
+      border-radius: 50%;
+    }
+    @keyframes doubaoBlink {
+      0%, 94%, 98%, 100% { transform: scaleY(1); }
+      96% { transform: scaleY(0.08); }
+    }
+    .doubao-blush {
+      position: absolute;
+      bottom: -6px;
+      width: 8px;
+      height: 4px;
+      background: rgba(244, 114, 182, 0.65);
+      border-radius: 50%;
+      filter: blur(1px);
+    }
+    .doubao-blush.left { left: -3px; }
+    .doubao-blush.right { right: -3px; }
+
+    /* ══════════════════════════════════════════════════════════════
+       2. AUTOCOMPLETE 实时联想补全下拉引擎
+       ══════════════════════════════════════════════════════════════ */
+    .autocomplete-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .autocomplete-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: rgba(15, 12, 28, 0.95);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(99, 102, 241, 0.2);
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 6px;
+      display: none;
+    }
+    .autocomplete-dropdown.active {
+      display: block;
+    }
+    .autocomplete-item {
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      color: rgba(243, 243, 242, 0.88);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .autocomplete-item:hover, .autocomplete-item.highlighted {
+      background: rgba(168, 85, 247, 0.22);
+      color: #ffffff;
+    }
+    .autocomplete-item strong {
+      color: #fcd34d;
+      font-weight: 700;
+    }
+    .autocomplete-badge {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.35);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       3. iOS 机械刻度 2 小时平滑时间滑动轮盘 (Wheel Picker)
+       ══════════════════════════════════════════════════════════════ */
+    .ios-wheel-container {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      perspective: 1000px;
+      margin: 14px 0 18px 0;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(10, 8, 22, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      touch-action: pan-y;
+      user-select: none;
+    }
+    .ios-wheel-mask {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      background: linear-gradient(180deg, 
+        rgba(10, 8, 22, 0.95) 0%, 
+        rgba(10, 8, 22, 0.2) 35%, 
+        rgba(10, 8, 22, 0) 50%, 
+        rgba(10, 8, 22, 0.2) 65%, 
+        rgba(10, 8, 22, 0.95) 100%
+      );
+    }
+    .ios-wheel-selection-lens {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      right: 12px;
+      height: 44px;
+      transform: translateY(-50%);
+      border-radius: 10px;
+      background: rgba(168, 85, 247, 0.15);
+      border-top: 1px solid rgba(168, 85, 247, 0.45);
+      border-bottom: 1px solid rgba(168, 85, 247, 0.45);
+      box-shadow: 0 0 18px rgba(168, 85, 247, 0.2), inset 0 0 12px rgba(168, 85, 247, 0.1);
+      pointer-events: none;
+      z-index: 4;
+    }
+    .ios-wheel-scroll-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      cursor: grab;
+      transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+    .ios-wheel-scroll-track:active {
+      cursor: grabbing;
+    }
+    .wheel-item {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 500;
+      color: rgba(243, 243, 242, 0.4);
+      transition: all 0.2s ease;
+      transform-origin: center center;
+    }
+    .wheel-item.selected {
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 700;
+      text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+      transform: scale(1.08);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       4. 差额高亮抖动与 TOAST 提示
+       ══════════════════════════════════════════════════════════════ */
+    .input-shake-error {
+      animation: inputShake 0.45s ease-in-out !important;
+      border-color: #f43f5e !important;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.5) !important;
+    }
+    @keyframes inputShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+    .assistant-toast-box {
+      position: fixed;
+      top: 86px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      z-index: 10000;
+      background: rgba(23, 15, 38, 0.95);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(16px);
+      border-radius: 9999px;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .assistant-toast-box.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       5. 暗黑高斯模糊登录数据暂存模态框
+       ══════════════════════════════════════════════════════════════ */
+    .auth-gate-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .auth-gate-modal.active {
+      display: flex;
+    }
+    .auth-gate-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 3, 15, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .auth-gate-card {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 440px;
+      background: rgba(20, 15, 38, 0.92);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(168, 85, 247, 0.25);
+      border-radius: 24px;
+      padding: 36px 32px;
+      text-align: center;
+    }
+    .auth-gate-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+    .auth-gate-desc {
+      font-size: 14px;
+      color: rgba(243, 243, 242, 0.7);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .auth-gate-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .auth-btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      color: #ffffff;
+      padding: 13px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
+    }
+    .auth-btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(243, 243, 242, 0.85);
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -1049,10 +1422,14 @@
 
               <div style="margin-top: 12px;">
                 <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
-                  品牌及型号（选填，如：格力 1.5匹变频冷暖挂机）
+                  家电品类与具体型号（支持实时打字自动补全，如：输入“电”可联想电视机、电饭煲等50+品类）
                 </label>
-                <input type="text" name="new_device_model" id="new_device_model" class="glass-input" 
-                       placeholder="填写具体型号有助于师傅提前备妥备件" />
+                <div class="autocomplete-wrapper">
+                  <input type="text" name="new_device_model" id="new_device_model" class="glass-input" 
+                         placeholder="如：电饭煲 / 美的滚筒洗衣机 / 格力中央空调 (打字即自动联想)..." 
+                         autocomplete="off" oninput="handleApplianceInput(this.value)" onfocus="handleApplianceInput(this.value)" />
+                  <div class="autocomplete-dropdown" id="applianceDropdown"></div>
+                </div>
               </div>
 
               <div class="step-actions">
@@ -1080,6 +1457,16 @@
               </div>
 
               <div style="margin-top: 14px;">
+                <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
+                  快速搜索/补充故障现象（支持输入实时自动补全）
+                </label>
+                <div class="autocomplete-wrapper" style="margin-bottom: 10px;">
+                  <input type="text" id="quickFaultInput" class="glass-input" 
+                         placeholder="输入故障关键词 (如：不加热 / 跳闸 / 漏水 / 异响)..." 
+                         autocomplete="off" oninput="handleFaultInput(this.value)" onfocus="handleFaultInput(this.value)" />
+                  <div class="autocomplete-dropdown" id="faultDropdown"></div>
+                </div>
+
                 <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
                   补充详细故障细节（选填）
                 </label>
@@ -1115,12 +1502,18 @@
                 <input type="date" id="custom_date" class="glass-input" style="max-width: 240px;" onchange="onCustomDate(this.value)" />
               </div>
 
-              <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">期望服务时段</label>
-              <div class="slot-grid">
-                <div class="slot-tile" onclick="selectSlot('上午 (09:00 - 12:00)', this)">☀️ 上午 (09:00 - 12:00)</div>
-                <div class="slot-tile selected" onclick="selectSlot('下午 (14:00 - 18:00)', this)">⛅ 下午 (14:00 - 18:00)</div>
-                <div class="slot-tile" onclick="selectSlot('夜间急修 (18:00 - 21:00)', this)">🌙 夜间急修 (18:00 - 21:00)</div>
-                <div class="slot-tile" onclick="selectSlot('全天随时均可', this)">⚡ 全天随时均可</div>
+              <label style="display: block; font-size: 13px; color: var(--color-sub); margin-bottom: 6px;">
+                期望服务时段 (上下滑动机械滚轮 · 2小时步长精准锁定)
+              </label>
+              <div class="ios-wheel-container" id="iosTimeWheel">
+                <div class="ios-wheel-mask"></div>
+                <div class="ios-wheel-selection-lens"></div>
+                <div class="ios-wheel-scroll-track" id="wheelTrack">
+                  <!-- JS 动态渲染 2 小时机械刻度时段 -->
+                </div>
+              </div>
+              <div style="font-size: 12.5px; color: #a5b4fc; text-align: center; margin-top: -6px; margin-bottom: 14px;">
+                当前已锁定：<strong id="wheelCurrentSelectedText" style="color: #fcd34d;">下午 (14:00 - 16:00)</strong>
               </div>
 
               <div class="step-actions">
@@ -1253,6 +1646,46 @@
     </div>
   </div>
 
+  <!-- 豆包 3D 拟态发光小精灵系统 (右下角常驻悬浮伴侣) -->
+  <div class="doubao-companion-box" id="doubaoCompanion">
+    <div class="doubao-speech-bubble" id="doubaoBubble">
+      <div id="doubaoText">你好！我是智修云 AI 小助手，随时为您指引报修~</div>
+    </div>
+    <div class="doubao-sphere-wrap" onclick="interactDoubao()" title="点击与 AI 小精灵互动">
+      <div class="doubao-halo"></div>
+      <div class="doubao-body">
+        <div class="doubao-face">
+          <div class="doubao-eye left"></div>
+          <div class="doubao-blush left"></div>
+          <div class="doubao-eye right"></div>
+          <div class="doubao-blush right"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全局轻提示 TOAST -->
+  <div class="assistant-toast-box" id="assistantToast">
+    <span id="toastIcon">✨</span>
+    <span id="toastMsg">提示内容</span>
+  </div>
+
+  <!-- 未登录鉴权数据暂存模态框 -->
+  <div class="auth-gate-modal" id="authGateModal">
+    <div class="auth-gate-backdrop" onclick="closeAuthModal()"></div>
+    <div class="auth-gate-card">
+      <div style="font-size: 36px; margin-bottom: 8px;">🔐</div>
+      <div class="auth-gate-title">登录后即可挑选师傅</div>
+      <div class="auth-gate-desc">
+        您已填写的家电型号、故障描述与预约地址将<strong>100% 自动暂存</strong>，登录后瞬间回填并直通第 5 步附近师傅抢单大厅！
+      </div>
+      <div class="auth-gate-actions">
+        <a href="/login?redirect=/ai-assistant?restore=1" class="auth-btn-primary" onclick="stashFormData()">立即前往登录 / 快速注册</a>
+        <button type="button" class="auth-btn-secondary" onclick="closeAuthModal()">返回检查修改表单</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ══════════════════════════════════════════════════════════
        JS SCRIPT: VIDEO FADE LOOP & WIZARD INTERACTION
        0.5s fade-in at start, 0.5s fade-out at end via requestAnimationFrame.
@@ -1377,9 +1810,378 @@
     function selectMyDevice(devId, devModel) {
       document.getElementById('hidden_device_id').value = devId;
       document.getElementById('new_device_model').value = devModel;
-      alert(`已选用已有设备：${devModel}`);
+      showToast(`已选定已有设备：${devModel}`, '📱');
+      setDoubaoMessage(`好嘞！已为您选定绑定的【${devModel}】~`);
     }
 
+    /* ══════════════════════════════════════════════════════════════
+       1. 豆包 3D 拟态发光小精灵伴侣 & 对话气泡系统
+       ══════════════════════════════════════════════════════════════ */
+    let doubaoTimer = null;
+    let doubaoTypeTimer = null;
+
+    function setDoubaoMessage(msg) {
+      const bubble = document.getElementById('doubaoBubble');
+      const textEl = document.getElementById('doubaoText');
+      if (!bubble || !textEl) return;
+
+      clearTimeout(doubaoTimer);
+      clearInterval(doubaoTypeTimer);
+
+      bubble.classList.add('show');
+      textEl.innerHTML = '';
+      let charIdx = 0;
+
+      doubaoTypeTimer = setInterval(() => {
+        if (charIdx < msg.length) {
+          textEl.innerHTML += msg[charIdx];
+          charIdx++;
+        } else {
+          clearInterval(doubaoTypeTimer);
+        }
+      }, 25);
+
+      doubaoTimer = setTimeout(() => {
+        bubble.classList.remove('show');
+      }, 7000);
+    }
+
+    function interactDoubao() {
+      const msgs = [
+        "需要帮您一键智能解析报修描述吗？直接在上方输入框粘贴一句话即可~",
+        "别担心！我们全城严选金牌师傅，30元排查费全程托管，未上门全额退款哦！",
+        "需要修改时间吗？直接拨动第3步的 iOS 机械轮盘即可精准到 2 小时~",
+        "只要身怀过硬手艺，全国订单随心接！我也支持师傅申请加盟呢！"
+      ];
+      const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
+      setDoubaoMessage(randomMsg);
+      showToast("豆包 AI 小精灵正伴随您填报中", "🤖");
+    }
+
+    function showToast(msg, icon = '✨') {
+      const toast = document.getElementById('assistantToast');
+      const msgEl = document.getElementById('toastMsg');
+      const iconEl = document.getElementById('toastIcon');
+      if (!toast) return;
+      msgEl.innerText = msg;
+      iconEl.innerText = icon;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2800);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       2. 50+ 全量家电字典与故障输入实时自动联想引擎
+       ══════════════════════════════════════════════════════════════ */
+    const ALL_APPLIANCES = [
+      { name: "中央空调", cat: "空调", pinyin: "zykt" },
+      { name: "变频冷暖挂机", cat: "空调", pinyin: "bplngj" },
+      { name: "圆柱立式柜机", cat: "空调", pinyin: "yzlsgj" },
+      { name: "移动便携空调", cat: "空调", pinyin: "ydbxkt" },
+      { name: "风管机空调", cat: "空调", pinyin: "fgjkt" },
+      { name: "对开双门冰箱", cat: "冰箱", pinyin: "dksmbx" },
+      { name: "多门十字冰箱", cat: "冰箱", pinyin: "dmszbx" },
+      { name: "三门风冷无霜冰箱", cat: "冰箱", pinyin: "smflwsbx" },
+      { name: "商用卧式冰柜/冷柜", cat: "冰箱", pinyin: "sywsbglg" },
+      { name: "车载迷你小冰箱", cat: "冰箱", pinyin: "czmnxbx" },
+      { name: "滚筒变频洗衣机", cat: "洗衣机", pinyin: "gtbpxyj" },
+      { name: "波轮全自动洗衣机", cat: "洗衣机", pinyin: "blqzdxyj" },
+      { name: "洗烘一体机/热泵烘干机", cat: "洗衣机", pinyin: "xhytjhgj" },
+      { name: "壁挂迷你婴儿洗衣机", cat: "洗衣机", pinyin: "bgmnyexyj" },
+      { name: "强排式燃气热水器", cat: "热水器", pinyin: "qpsrqrsq" },
+      { name: "储水式电热水器", cat: "热水器", pinyin: "cssdrsq" },
+      { name: "空气能热泵热水器", cat: "热水器", pinyin: "kqnrbrsq" },
+      { name: "太阳能热水器", cat: "热水器", pinyin: "tynrsq" },
+      { name: "即热式小厨宝", cat: "热水器", pinyin: "jrsxcb" },
+      { name: "侧吸顶吸智能抽油烟机", cat: "抽油烟机", pinyin: "cxdxzncyyj" },
+      { name: "集成灶 (油烟消毒一体)", cat: "抽油烟机", pinyin: "jcz" },
+      { name: "天然气双眼灶台", cat: "燃气灶", pinyin: "trqsyzt" },
+      { name: "液化气嵌入式燃气灶", cat: "燃气灶", pinyin: "yhqqrssrqz" },
+      { name: "4K/8K 超高清液晶电视", cat: "电视机", pinyin: "cgqyjds" },
+      { name: "OLED/MiniLED 大屏电视", cat: "电视机", pinyin: "oleddpds" },
+      { name: "智能家庭激光投影仪", cat: "电视机", pinyin: "znjtjgtyy" },
+      { name: "智能嵌入式洗碗机", cat: "洗碗机", pinyin: "znqrssxwj" },
+      { name: "台式免安装洗碗机", cat: "洗碗机", pinyin: "tsmaxxwj" },
+      { name: "紫外线厨房消毒柜", cat: "小家电", pinyin: "zwxcfxdg" },
+      { name: "智能IH微电脑电饭煲", cat: "小家电", pinyin: "znihwdndfb" },
+      { name: "多功能智能空气炸锅", cat: "小家电", pinyin: "dgnznkqzg" },
+      { name: "变频烧烤微波炉", cat: "小家电", pinyin: "bpsk_wbl" },
+      { name: "高频双眼电磁炉", cat: "小家电", pinyin: "gpsydcl" },
+      { name: "多功能智能电压力锅", cat: "小家电", pinyin: "dgnzndylg" },
+      { name: "静音柔音加热破壁机", cat: "小家电", pinyin: "jyryjrpbj" },
+      { name: "全自动研磨意式咖啡机", cat: "小家电", pinyin: "qzndmyskfj" },
+      { name: "多功能养生壶/煎药壶", cat: "小家电", pinyin: "dgnyshjyh" },
+      { name: "智能全屋扫拖机器人", cat: "小家电", pinyin: "znqwstjqr" },
+      { name: "手持无线大吸力吸尘器", cat: "小家电", pinyin: "scwxdxlxcq" },
+      { name: "智能洗地机 (活水清洁)", cat: "小家电", pinyin: "znxdj" },
+      { name: "家用紫外线除螨仪", cat: "小家电", pinyin: "jyzwx_cmy" },
+      { name: "除甲醛空气净化器", cat: "小家电", pinyin: "cjqkqjhq" },
+      { name: "大功率静音家用除湿机", cat: "小家电", pinyin: "dgljyjycsj" },
+      { name: "无雾超声波加湿器", cat: "小家电", pinyin: "wwcsbjsq" },
+      { name: "变频直流轻音电风扇/空气循环扇", cat: "小家电", pinyin: "bpzlqydfs" },
+      { name: "踢脚线对流式取暖器/电暖气", cat: "小家电", pinyin: "tjxdlsqnq" },
+      { name: "台式/厨下式RO反渗透净水器", cat: "小家电", pinyin: "tsro_jsq" },
+      { name: "即热式管线饮水机", cat: "小家电", pinyin: "jrsgxysj" },
+      { name: "厨下食物垃圾处理器", cat: "小家电", pinyin: "cxswljclq" },
+      { name: "智能温水冲洗加热马桶盖", cat: "卫浴", pinyin: "znwscxmtg" },
+      { name: "电动折叠晾衣机", cat: "阳台", pinyin: "ddzdlyj" },
+      { name: "指纹密码智能防盗门锁", cat: "安防", pinyin: "zwmmznfdms" }
+    ];
+
+    const ALL_FAULTS = [
+      { text: "不通电/开不了机/电源指示灯不亮", cat: "电气" },
+      { text: "开机频繁跳闸/漏电短路保护", cat: "电气" },
+      { text: "制冷效果差/只吹常温风/室外机不转", cat: "空调" },
+      { text: "冷藏室结冰严重/冷冻室完全不制冷", cat: "冰箱" },
+      { text: "脱水时剧烈震动/撞桶异响无法甩干", cat: "洗衣机" },
+      { text: "底部严重漏水/进水管渗漏水", cat: "水路" },
+      { text: "加热慢/出水不热/水温忽冷忽热", cat: "热水器" },
+      { text: "燃气灶打火无反应/松手即熄火", cat: "燃气" },
+      { text: "油烟机吸力骤降/叶轮异响电机发热", cat: "烟机" },
+      { text: "电视黑屏有声音/开机白屏花屏无信号", cat: "电视" },
+      { text: "运行噪音巨大/内部有金属刮擦声", cat: "机械" },
+      { text: "按键完全失灵/触控面板没反应", cat: "控制" },
+      { text: "机器散发焦糊塑料味/外壳严重发烫", cat: "安全" },
+      { text: "报故障代码E1/E2/E6等传感器异常", cat: "电脑板" }
+    ];
+
+    function handleApplianceInput(query) {
+      const q = (query || '').trim().toLowerCase();
+      const dropdown = document.getElementById('applianceDropdown');
+      if (!dropdown) return;
+
+      if (!q) {
+        dropdown.classList.remove('active');
+        return;
+      }
+
+      const matches = ALL_APPLIANCES.filter(item => 
+        item.name.toLowerCase().includes(q) || 
+        item.cat.toLowerCase().includes(q) || 
+        item.pinyin.includes(q)
+      );
+
+      if (matches.length === 0) {
+        dropdown.innerHTML = `
+          <div class="autocomplete-item" onclick="selectCustomAppliance('${escapeJs(q)}')">
+            <span>使用自定义品类：<strong>${escapeHtml(q)}</strong></span>
+            <span class="autocomplete-badge">自定义</span>
+          </div>`;
+      } else {
+        dropdown.innerHTML = matches.slice(0, 8).map(m => {
+          const highlightedName = m.name.replace(new RegExp(`(${escapeRegExp(q)})`, 'gi'), '<strong>$1</strong>');
+          return `
+            <div class="autocomplete-item" onclick="pickApplianceItem('${escapeJs(m.name)}', '${escapeJs(m.cat)}')">
+              <span>${highlightedName}</span>
+              <span class="autocomplete-badge">${m.cat}</span>
+            </div>
+          `;
+        }).join('');
+      }
+      dropdown.classList.add('active');
+    }
+
+    function pickApplianceItem(name, cat) {
+      document.getElementById('new_device_model').value = name;
+      document.getElementById('applianceDropdown').classList.remove('active');
+      selectAppliance(cat);
+      showToast(`已选定品类：${name}`, "✨");
+      setDoubaoMessage(`好嘞！已为您选定【${name}】，现在来选择遇到了什么故障吧~`);
+    }
+
+    function selectCustomAppliance(name) {
+      document.getElementById('new_device_model').value = name;
+      document.getElementById('applianceDropdown').classList.remove('active');
+      selectAppliance('其他');
+      showToast(`已登记自定义家电：${name}`, "📝");
+      setDoubaoMessage(`收到！小助手已记录您的特殊品类【${name}】~`);
+    }
+
+    function handleFaultInput(query) {
+      const q = (query || '').trim().toLowerCase();
+      const dropdown = document.getElementById('faultDropdown');
+      if (!dropdown) return;
+
+      if (!q) {
+        dropdown.classList.remove('active');
+        return;
+      }
+
+      const matches = ALL_FAULTS.filter(f => f.text.toLowerCase().includes(q) || f.cat.toLowerCase().includes(q));
+      if (matches.length === 0) {
+        dropdown.innerHTML = `
+          <div class="autocomplete-item" onclick="addCustomFault('${escapeJs(q)}')">
+            <span>追加自定义故障：<strong>${escapeHtml(q)}</strong></span>
+            <span class="autocomplete-badge">追加</span>
+          </div>`;
+      } else {
+        dropdown.innerHTML = matches.slice(0, 6).map(f => {
+          const highlighted = f.text.replace(new RegExp(`(${escapeRegExp(q)})`, 'gi'), '<strong>$1</strong>');
+          return `
+            <div class="autocomplete-item" onclick="addCustomFault('${escapeJs(f.text)}')">
+              <span>${highlighted}</span>
+              <span class="autocomplete-badge">${f.cat}</span>
+            </div>
+          `;
+        }).join('');
+      }
+      dropdown.classList.add('active');
+    }
+
+    function addCustomFault(faultText) {
+      const descEl = document.getElementById('description');
+      const inputEl = document.getElementById('quickFaultInput');
+      if (descEl.value.trim()) {
+        descEl.value += '；' + faultText;
+      } else {
+        descEl.value = faultText;
+      }
+      inputEl.value = '';
+      document.getElementById('faultDropdown').classList.remove('active');
+      showToast(`已添加故障：${faultText}`, "⚡");
+      setDoubaoMessage(`已为您记录故障【${faultText}】，师傅会提前携带对口工具~`);
+    }
+
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function escapeJs(text) {
+      return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // 点击外部收起下拉框
+    document.addEventListener('click', function(e) {
+      const appDrop = document.getElementById('applianceDropdown');
+      const faultDrop = document.getElementById('faultDropdown');
+      if (appDrop && !e.target.closest('#new_device_model') && !e.target.closest('#applianceDropdown')) {
+        appDrop.classList.remove('active');
+      }
+      if (faultDrop && !e.target.closest('#quickFaultInput') && !e.target.closest('#faultDropdown')) {
+        faultDrop.classList.remove('active');
+      }
+    });
+
+    /* ══════════════════════════════════════════════════════════════
+       3. iOS 机械刻度 2 小时平滑时间滑动轮盘引擎 (Wheel Picker)
+       ══════════════════════════════════════════════════════════════ */
+    const WHEEL_SLOTS = [
+      { text: "上午 (08:00 - 10:00)", badge: "清晨首批" },
+      { text: "上午 (10:00 - 12:00)", badge: "上午黄金档" },
+      { text: "中午 (12:00 - 14:00)", badge: "午间急修" },
+      { text: "下午 (14:00 - 16:00)", badge: "下午时段 (推荐)" },
+      { text: "下午 (16:00 - 18:00)", badge: "傍晚归家" },
+      { text: "夜间 (18:00 - 20:00)", badge: "夜间急修" },
+      { text: "夜间 (20:00 - 22:00)", badge: "夜间晚档" }
+    ];
+
+    let currentWheelIndex = 3; // 默认选中下午 14:00-16:00
+    const ITEM_HEIGHT = 44;
+
+    function initIosWheel() {
+      const track = document.getElementById('wheelTrack');
+      if (!track) return;
+      track.innerHTML = '';
+
+      WHEEL_SLOTS.forEach((slot, index) => {
+        const item = document.createElement('div');
+        item.className = `wheel-item ${index === currentWheelIndex ? 'selected' : ''}`;
+        item.innerText = slot.text;
+        item.onclick = () => {
+          scrollToWheelIndex(index);
+        };
+        track.appendChild(item);
+      });
+
+      updateWheelTrackPosition(false);
+      setupWheelGesture();
+    }
+
+    function scrollToWheelIndex(index) {
+      if (index < 0) index = 0;
+      if (index >= WHEEL_SLOTS.length) index = WHEEL_SLOTS.length - 1;
+      currentWheelIndex = index;
+      updateWheelTrackPosition(true);
+
+      const selected = WHEEL_SLOTS[currentWheelIndex];
+      document.getElementById('hidden_app_slot').value = selected.text;
+      const textEl = document.getElementById('wheelCurrentSelectedText');
+      if (textEl) textEl.innerText = selected.text;
+
+      document.querySelectorAll('.wheel-item').forEach((it, idx) => {
+        it.classList.toggle('selected', idx === currentWheelIndex);
+      });
+
+      setDoubaoMessage(`已锁定上门时段为【${selected.text}】，师傅准点出发~`);
+    }
+
+    function updateWheelTrackPosition(animate = true) {
+      const track = document.getElementById('wheelTrack');
+      if (!track) return;
+      const containerH = 180;
+      const centerY = (containerH / 2) - (ITEM_HEIGHT / 2);
+      const targetY = centerY - (currentWheelIndex * ITEM_HEIGHT);
+
+      track.style.transition = animate ? 'transform 0.28s cubic-bezier(0.12, 0.9, 0.25, 1)' : 'none';
+      track.style.transform = `translateY(${targetY}px)`;
+    }
+
+    function setupWheelGesture() {
+      const container = document.getElementById('iosTimeWheel');
+      if (!container) return;
+
+      let startY = 0;
+      let startIdx = 0;
+      let isDragging = false;
+
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (e.deltaY > 0) {
+          scrollToWheelIndex(currentWheelIndex + 1);
+        } else {
+          scrollToWheelIndex(currentWheelIndex - 1);
+        }
+      }, { passive: false });
+
+      const onStart = (clientY) => {
+        isDragging = true;
+        startY = clientY;
+        startIdx = currentWheelIndex;
+      };
+
+      const onMove = (clientY) => {
+        if (!isDragging) return;
+        const delta = clientY - startY;
+        const stepOffset = Math.round(-delta / (ITEM_HEIGHT * 0.8));
+        const newIdx = Math.max(0, Math.min(WHEEL_SLOTS.length - 1, startIdx + stepOffset));
+        if (newIdx !== currentWheelIndex) {
+          scrollToWheelIndex(newIdx);
+        }
+      };
+
+      const onEnd = () => {
+        isDragging = false;
+      };
+
+      container.addEventListener('mousedown', (e) => onStart(e.clientY));
+      window.addEventListener('mousemove', (e) => onMove(e.clientY));
+      window.addEventListener('mouseup', onEnd);
+
+      container.addEventListener('touchstart', (e) => onStart(e.touches[0].clientY), { passive: true });
+      window.addEventListener('touchmove', (e) => {
+        if (isDragging) onMove(e.touches[0].clientY);
+      }, { passive: true });
+      window.addEventListener('touchend', onEnd);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       4. 向导切换与一句话差额定向补齐引导
+       ══════════════════════════════════════════════════════════════ */
     function toggleSymptom(el, text) {
       el.classList.toggle('selected');
       if (el.classList.contains('selected')) {
@@ -1389,12 +2191,13 @@
       }
       document.getElementById('hidden_fault_tags').value = selectedSymptoms.join('、');
       updateDiagText();
+      setDoubaoMessage(`收到！已帮您勾选【${text}】现象~`);
     }
 
     function updateDiagText() {
       const el = document.getElementById('aiAdviceText');
       if (!el) return;
-      const tags = selectedSymptoms.join('、') || '常规故障';
+      const tags = selectedSymptoms.join('、') || '常规故障排查';
       el.innerText = `系统已为您建立【${selectedCategory} - ${tags}】诊断档案，上门师傅将依此提前备齐专用检测工具与备件，现场出示专属 6 位核销码才结算排查费。`;
     }
 
@@ -1432,6 +2235,29 @@
           line.classList.toggle('completed', i < stepNum);
         }
       }
+
+      // 豆包动态发话
+      if (stepNum === 1) {
+        setDoubaoMessage("第一步：请点击或输入您要报修的家电类型，支持50+常用电器联想哦~");
+      } else if (stepNum === 2) {
+        setDoubaoMessage("第二步：大概遇到了什么故障？点击标签或输入关键词，我们将匹配合适师傅~");
+      } else if (stepNum === 3) {
+        setDoubaoMessage("第三步：师傅何时上门合适？滑动 iOS 机械滚轮每 2 小时一个时段任您挑！");
+      } else if (stepNum === 4) {
+        setDoubaoMessage("最后一步啦！请核对联系电话与服务地址，点击下一步直达附近师傅大厅~");
+      }
+    }
+
+    function highlightErrorInput(elementId) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      el.classList.remove('input-shake-error');
+      void el.offsetWidth; // 触发重绘
+      el.classList.add('input-shake-error');
+      el.focus();
+      setTimeout(() => {
+        el.classList.remove('input-shake-error');
+      }, 1000);
     }
 
     function validateStep(step) {
@@ -1440,46 +2266,137 @@
         const phone = document.getElementById('contact_phone').value.trim();
         const addr = document.getElementById('service_address').value.trim();
         if (!name) {
-          alert('请填写联系人姓名');
-          document.getElementById('contact_name').focus();
+          showToast('请填写联系人姓名', '⚠️');
+          highlightErrorInput('contact_name');
+          setDoubaoMessage('哎呀，联系人姓名还没填呢，师傅不知道怎么称呼您呢~');
           return false;
         }
         if (!phone || phone.length !== 11 || !phone.startsWith('1')) {
-          alert('请填写正确的11位联系手机号码');
-          document.getElementById('contact_phone').focus();
+          showToast('请填写正确的11位联系手机号码', '📱');
+          highlightErrorInput('contact_phone');
+          setDoubaoMessage('手机号格式不正确哦，师傅上门前需要给您致电核实呢~');
           return false;
         }
         if (!addr) {
-          alert('请填写详细上门服务地址');
-          document.getElementById('service_address').focus();
+          showToast('请填写详细上门服务地址', '📍');
+          highlightErrorInput('service_address');
+          setDoubaoMessage('请填写具体的上门门牌地址，师傅才能准点赶到哦~');
           return false;
         }
       }
       return true;
     }
 
+    /* ══════════════════════════════════════════════════════════════
+       5. 提交进入第 5 步鉴权拦截 & 数据无损暂存
+       ══════════════════════════════════════════════════════════════ */
+    const IS_AUTHENTICATED = {% if current_user and current_user.is_authenticated %}true{% else %}false{% endif %};
+
     function submitToPickTech() {
       if (!validateStep(4)) return;
+
+      if (!IS_AUTHENTICATED) {
+        stashFormData();
+        document.getElementById('authGateModal').classList.add('active');
+        setDoubaoMessage('您尚未登录，报修信息已自动 100% 暂存，登录后瞬间回显直达大厅！');
+        return;
+      }
+
       document.getElementById('aiRepairForm').submit();
     }
 
+    function closeAuthModal() {
+      document.getElementById('authGateModal').classList.remove('active');
+    }
+
+    function stashFormData() {
+      const data = {
+        category: document.getElementById('hidden_category').value,
+        device_id: document.getElementById('hidden_device_id').value,
+        new_device_model: document.getElementById('new_device_model').value,
+        fault_tags: document.getElementById('hidden_fault_tags').value,
+        description: document.getElementById('description').value,
+        appointment_date: document.getElementById('hidden_app_date').value,
+        appointment_slot: document.getElementById('hidden_app_slot').value,
+        contact_name: document.getElementById('contact_name').value,
+        contact_phone: document.getElementById('contact_phone').value,
+        service_address: document.getElementById('service_address').value,
+      };
+      sessionStorage.setItem('pending_ai_repair_form', JSON.stringify(data));
+      showToast('表单数据已安全暂存', '💾');
+    }
+
+    function restoreFormDataIfAny() {
+      const saved = sessionStorage.getItem('pending_ai_repair_form');
+      if (!saved) return;
+      try {
+        const d = JSON.parse(saved);
+        if (d.category) selectAppliance(d.category);
+        if (d.device_id) document.getElementById('hidden_device_id').value = d.device_id;
+        if (d.new_device_model) document.getElementById('new_device_model').value = d.new_device_model;
+        if (d.fault_tags) document.getElementById('hidden_fault_tags').value = d.fault_tags;
+        if (d.description) document.getElementById('description').value = d.description;
+        if (d.appointment_date) document.getElementById('hidden_app_date').value = d.appointment_date;
+        if (d.appointment_slot) {
+          document.getElementById('hidden_app_slot').value = d.appointment_slot;
+          const matchedIdx = WHEEL_SLOTS.findIndex(s => s.text === d.appointment_slot);
+          if (matchedIdx !== -1) scrollToWheelIndex(matchedIdx);
+        }
+        if (d.contact_name) document.getElementById('contact_name').value = d.contact_name;
+        if (d.contact_phone) document.getElementById('contact_phone').value = d.contact_phone;
+        if (d.service_address) document.getElementById('service_address').value = d.service_address;
+
+        sessionStorage.removeItem('pending_ai_repair_form');
+        showStep(4);
+        showToast('已无损恢复您之前填写的报修信息', '✨');
+        setDoubaoMessage('欢迎回来！已为您瞬间恢复所有报修信息，请点击挑选师傅即可~');
+      } catch (e) {
+        console.error('Failed to restore form data', e);
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       6. 自然语言一句话极速填单与差额定向补齐
+       ══════════════════════════════════════════════════════════════ */
     function executeNlpParse() {
       const text = document.getElementById('aiNlpInput').value.trim();
       if (!text) {
-        alert('请输入报修描述，如：海尔空调不制冷，明天下午在朝阳区修，电话13800000000');
+        showToast('请输入一句话报修描述', '⚠️');
+        setDoubaoMessage('请在输入框粘贴一句日常话语，如：海尔洗衣机脱水不转，明天下午在中关村修，电话13900000000');
+        highlightErrorInput('aiNlpInput');
         return;
       }
-      const cats = ['空调', '冰箱', '洗衣机', '热水器', '抽油烟机', '油烟机', '燃气灶', '电视机', '洗碗机'];
-      for (const c of cats) {
-        if (text.includes(c)) {
-          selectAppliance(c === '油烟机' ? '抽油烟机' : c);
+
+      // 1. 匹配品类
+      let matchedApp = null;
+      for (const item of ALL_APPLIANCES) {
+        if (text.includes(item.name)) {
+          matchedApp = item;
           break;
         }
       }
+      if (!matchedApp) {
+        const basicCats = ['空调', '冰箱', '洗衣机', '热水器', '抽油烟机', '油烟机', '燃气灶', '电视机', '洗碗机', '电饭煲', '微波炉'];
+        for (const bc of basicCats) {
+          if (text.includes(bc)) {
+            matchedApp = { name: bc, cat: (bc === '油烟机' ? '抽油烟机' : bc) };
+            break;
+          }
+        }
+      }
+
+      if (matchedApp) {
+        selectAppliance(matchedApp.cat);
+        document.getElementById('new_device_model').value = matchedApp.name;
+      }
+
+      // 2. 匹配手机号
       const phoneMatch = text.match(/1[3-9]\d{9}/);
       if (phoneMatch) {
         document.getElementById('contact_phone').value = phoneMatch[0];
       }
+
+      // 3. 匹配日期
       if (text.includes('今天')) {
         document.querySelectorAll('.date-tag')[0]?.click();
       } else if (text.includes('明天')) {
@@ -1487,8 +2404,36 @@
       } else if (text.includes('后天')) {
         document.querySelectorAll('.date-tag')[2]?.click();
       }
+
+      // 4. 匹配时段
+      if (text.includes('上午')) {
+        scrollToWheelIndex(1); // 10:00 - 12:00
+      } else if (text.includes('下午')) {
+        scrollToWheelIndex(3); // 14:00 - 16:00
+      } else if (text.includes('晚上') || text.includes('夜间')) {
+        scrollToWheelIndex(5); // 18:00 - 20:00
+      }
+
       document.getElementById('description').value = text;
-      alert('✨ AI 智能解析完成！已为您自动识别家电品类与预约时段，请点击【下一步】继续。');
+
+      // 5. 差额分析
+      const hasPhone = !!document.getElementById('contact_phone').value.trim();
+      const hasAddr = !!document.getElementById('service_address').value.trim();
+
+      if (!hasPhone || !hasAddr) {
+        showStep(4);
+        showToast('已提取核心信息，请补齐联络项', '📝');
+        if (!hasPhone) {
+          highlightErrorInput('contact_phone');
+          setDoubaoMessage('已为您智能解析家电与故障！不过还缺少【联系电话】，已定位到输入框，请补齐~');
+        } else {
+          highlightErrorInput('service_address');
+          setDoubaoMessage('已为您智能解析家电与故障！不过还缺少【上门地址】，已定位到输入框，请补齐~');
+        }
+      } else {
+        showToast('✨ 一句话智能解析完全成功！', '🎉');
+        setDoubaoMessage('太棒了！品类、故障、时段与联络信息已全部自动填妥，核对后即可直达选师傅大厅！');
+      }
     }
 
     function toggleAssistantMobileNav() {
@@ -1506,6 +2451,15 @@
           drawer.classList.remove('open');
         }
       }
+    });
+
+    // 初始化轮盘与暂存检测
+    window.addEventListener('load', () => {
+      initIosWheel();
+      restoreFormDataIfAny();
+      setTimeout(() => {
+        setDoubaoMessage('您好！我是智修云 AI 小助手，随时为您指引极速报修~');
+      }, 1000);
     });
   </script>
 </body>
