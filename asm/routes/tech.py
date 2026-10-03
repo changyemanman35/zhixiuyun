@@ -66,7 +66,7 @@ def tech_grab(oid):
         flash('该单已被其他师傅抢先一步接走啦！', 'warning')
         return redirect(url_for('tech.tech_index'))
 
-    from utils import utcnow
+    from models import utcnow
     order.technician_id = tech_id
     order.status = 'ASSIGNED'
     order.dispatched_at = utcnow()
@@ -106,7 +106,7 @@ def tech_checkin(oid):
         flash('核销码错误！请向客户索取手机上展示的 6 位动态验证码', 'danger')
         return redirect(url_for('tech.tech_index'))
 
-    from utils import utcnow
+    from models import utcnow
     order.checkin_at = utcnow()
     order.pay_status = 'SETTLED'
     

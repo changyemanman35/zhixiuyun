@@ -230,6 +230,8 @@ class TestExtendedFeatures(unittest.TestCase):
 
     # ── 9. ASM Copilot 离线意图识别与敏感脱敏 ──
     def test_copilot_engine_and_api(self):
+        with self.client.session_transaction() as sess:
+            sess.clear()
         # 脱敏测试
         text_with_phone = "我的手机是 13812345678，住在101室"
         sanitized = copilot_engine.sanitize_text(text_with_phone)
@@ -436,6 +438,80 @@ class TestExtendedFeatures(unittest.TestCase):
         self.assertEqual(cust.phone, '13911112222')
 
         # 清理该测试工单
+        db.session.delete(wo)
+        db.session.commit()
+
+    def test_broadcast_order_and_tech_grab_concurrency(self):
+        """测试全城抢单大厅撮合、并发防重抢单与双通道视觉断言"""
+        # 1. 验证 AI 智能报修页面的双通道按钮与冻结资产守卫
+        res_ai = self.client.get('/ai-assistant')
+        self.assertEqual(res_ai.status_code, 200)
+        html_ai = res_ai.data.decode('utf-8')
+        self.assertIn('Power <span class="hero-headline-ai">AI</span>', html_ai)
+        self.assertIn('marquee-bottom-container', html_ai)
+        self.assertIn('全城极速抢单 (推荐·5分钟接单)', html_ai)
+        self.assertIn('自选指定师傅', html_ai)
+        self.assertIn('可以顺着下方步骤一步一步点选', html_ai)
+
+        # 2. 模拟客户以 broadcast 提交全城抢单
+        with self.client.session_transaction() as sess:
+            sess['user_id'] = 9998
+            sess['role'] = 'customer'
+        res_order = self.client.post('/orders/new', data={
+            'category': '燃气灶',
+            'new_device_model': '老板防干烧聚能燃气灶',
+            'description': '[打不着火] 旋钮点火无火花且有燃气气味',
+            'appointment_date': '2026-10-08',
+            'appointment_slot': '上午 (10:00 - 12:00)',
+            'contact_name': '李女士',
+            'contact_phone': '13812345678',
+            'service_address': '北京市朝阳区望京SOHO T3',
+            'selected_tech_id': 'broadcast'
+        }, follow_redirects=True)
+        self.assertEqual(res_order.status_code, 200)
+
+        # 3. 验证数据库中工单状态为 PENDING 且 technician_id 为空
+        wo = WorkOrder.query.filter_by(description='[打不着火] 旋钮点火无火花且有燃气气味').first()
+        self.assertIsNotNone(wo)
+        self.assertEqual(wo.status, 'PENDING')
+        self.assertIsNone(wo.technician_id)
+
+        # 4. 获取两个 active 技师
+        techs = Technician.query.filter_by(active=True).all()
+        self.assertGreaterEqual(len(techs), 2)
+        tech1, tech2 = techs[0], techs[1]
+
+        # 5. 技师 1 查看工作台抢单池
+        with self.client.session_transaction() as sess:
+            sess['role'] = 'technician'
+            sess['current_tech_id'] = tech1.id
+        res_tech_pool = self.client.get('/tech')
+        self.assertEqual(res_tech_pool.status_code, 200)
+        self.assertIn('邻里抢单雷达', res_tech_pool.data.decode('utf-8'))
+
+        # 6. 技师 1 触发抢单
+        res_grab1 = self.client.post(f'/tech/{wo.id}/grab', follow_redirects=True)
+        self.assertEqual(res_grab1.status_code, 200)
+        self.assertIn('抢单成功', res_grab1.data.decode('utf-8'))
+
+        # 重新从数据库拉取，验证工单已被 tech1 锁定
+        db.session.refresh(wo)
+        self.assertEqual(wo.status, 'ASSIGNED')
+        self.assertEqual(wo.technician_id, tech1.id)
+
+        # 7. 技师 2 紧接着并发抢同一张工单 -> 必须被优雅拦截
+        with self.client.session_transaction() as sess:
+            sess['role'] = 'technician'
+            sess['current_tech_id'] = tech2.id
+        res_grab2 = self.client.post(f'/tech/{wo.id}/grab', follow_redirects=True)
+        self.assertEqual(res_grab2.status_code, 200)
+        self.assertIn('该单已被其他师傅抢先一步接走啦', res_grab2.data.decode('utf-8'))
+
+        # 工单依然完好归属于 tech1
+        db.session.refresh(wo)
+        self.assertEqual(wo.technician_id, tech1.id)
+
+        # 清理测试数据
         db.session.delete(wo)
         db.session.commit()
 

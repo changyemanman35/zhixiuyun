@@ -1578,16 +1578,19 @@
                        value="{{ current_cust.address if current_cust else '' }}" placeholder="如：北京市朝阳区北苑家园望春园3号楼2单元601" required />
               </div>
 
-              <div style="background: rgba(99, 102, 241, 0.1); border: 1px dashed rgba(99, 102, 241, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #c7d2fe;">
-                🚀 <strong>下一步跳转：</strong>点击下方按钮将为您<strong>跳转至全新的【第 5 步：附近在线师傅撮合大厅】</strong>，开启全城 LBS 抢单雷达并供您自由挑选在线金牌工匠！
+              <div style="background: rgba(234, 88, 12, 0.08); border: 1px dashed rgba(234, 88, 12, 0.35); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #fed7aa; margin-bottom: 6px;">
+                ⚡ <strong>双通道撮合模式：</strong>推荐使用【全城极速抢单】，系统将就近广播给全城在岗师傅，平均 5 分钟秒级接单；您也可以点击【自选指定师傅】进入大厅挑选心仪工匠。
               </div>
 
-              <div class="step-actions">
-                <button type="button" class="btn-step-prev" onclick="prevStep(3)">
-                  ⬅️ 返回上一步
+              <div class="step-actions" style="display: flex; gap: 12px; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+                <button type="button" class="btn-step-prev" onclick="prevStep(3)" style="margin-right: auto;">
+                  ⬅️ 上一步
                 </button>
-                <button type="button" class="btn-step-next" onclick="submitToPickTech()">
-                  下一步：挑选附近师傅 (跳转新界面) ➔
+                <button type="button" class="btn-step-prev" onclick="submitToPickTech()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #cbd5e1; padding: 12px 20px; font-size: 13.5px;" title="进入独立第5步挑选师傅大厅">
+                  👤 自选指定师傅 (下一步：挑选附近师傅 (跳转新界面)) ➔
+                </button>
+                <button type="button" class="btn-step-next" onclick="submitBroadcastGrab()" style="background: linear-gradient(135deg, #ea580c, #f97316); box-shadow: 0 4px 18px rgba(234, 88, 12, 0.45); border: none; padding: 12px 24px; font-size: 14px; font-weight: 700;">
+                  ⚡ 全城极速抢单 (推荐·5分钟接单)
                 </button>
               </div>
             </div>
@@ -1673,9 +1676,9 @@
     <div class="auth-gate-backdrop" onclick="closeAuthModal()"></div>
     <div class="auth-gate-card">
       <div style="font-size: 36px; margin-bottom: 8px;">🔐</div>
-      <div class="auth-gate-title">登录后即可挑选师傅</div>
+      <div class="auth-gate-title">登录后即可极速派单或挑选师傅</div>
       <div class="auth-gate-desc">
-        您已填写的家电型号、故障描述与预约地址将<strong>100% 自动暂存</strong>，登录后瞬间回填并直通第 5 步附近师傅抢单大厅！
+        您已填写的家电型号、故障描述与预约地址将<strong>100% 自动暂存</strong>，登录后瞬间回填并直通全城极速抢单大厅！
       </div>
       <div class="auth-gate-actions">
         <a href="/login?redirect=/ai-assistant?restore=1" class="auth-btn-primary" onclick="stashFormData()">立即前往登录 / 快速注册</a>
@@ -2301,6 +2304,38 @@
       }
 
       document.getElementById('aiRepairForm').submit();
+    }
+
+    function submitBroadcastGrab() {
+      if (!validateStep(4)) return;
+
+      if (!IS_AUTHENTICATED) {
+        stashFormData();
+        sessionStorage.setItem('pending_repair_action', 'broadcast');
+        document.getElementById('authGateModal').classList.add('active');
+        setDoubaoMessage('您尚未登录，报修信息已 100% 自动暂存，登录后瞬间为您广播至全城抢单大厅！');
+        return;
+      }
+
+      const form = document.getElementById('aiRepairForm');
+      const modelInput = document.getElementById('new_device_model');
+      if (!modelInput.value.trim()) {
+        modelInput.value = document.getElementById('hidden_category').value || '家用电器';
+      }
+
+      let techInput = document.getElementById('hidden_selected_tech_id');
+      if (!techInput) {
+        techInput = document.createElement('input');
+        techInput.type = 'hidden';
+        techInput.name = 'selected_tech_id';
+        techInput.id = 'hidden_selected_tech_id';
+        form.appendChild(techInput);
+      }
+      techInput.value = 'broadcast';
+
+      form.action = '/orders/new';
+      showToast('正在向全城在岗师傅广播抢单...', '📡');
+      form.submit();
     }
 
     function closeAuthModal() {

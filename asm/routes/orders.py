@@ -121,6 +121,9 @@ def new_order():
         current_cust.phone = custom_phone
 
     # 现场登记自购新设备支持 (零设备客户平滑建档)
+    if not new_device_model and (not device_id or device_id == 'new'):
+        new_device_model = request.form.get('category', '').strip() or '家用电器'
+
     if (not device_id or device_id == 'new') and new_device_model:
         from datetime import date
         new_sn = request.form.get('new_device_sn', '').strip()
