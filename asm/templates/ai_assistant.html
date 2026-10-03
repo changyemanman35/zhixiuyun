@@ -1283,9 +1283,7 @@
               <a href="/ai-assistant" class="mobile-drawer-link active">🤖 AI智能助手</a>
             {% elif current_user.role == 'dispatcher' %}
               <a href="/" class="mobile-drawer-link">调度看板</a>
-              <a href="/customers" class="mobile-drawer-link">客户设备</a>
-              <a href="/parts" class="mobile-drawer-link">字典与价目</a>
-              <a href="/reports" class="mobile-drawer-link">管理报表</a>
+              <a href="/customers" class="mobile-drawer-link">客户档案</a>
               <a href="/ai-assistant" class="mobile-drawer-link active">🤖 AI智能助手</a>
             {% endif %}
             <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
@@ -1354,7 +1352,7 @@
           <div class="nlp-box-wrapper">
             <!-- 就近正上方打字引导气泡 -->
             <div class="doubao-speech-bubble" id="doubaoBubble">
-              <div id="doubaoText">你好！我是智修云 AI 小助手，在下方输入一句话即可智能解析~</div>
+              <div id="doubaoText">您好呀！报修超简单：您可以直接在这一句话输入问题（如海尔空调不制冷明天下午修），也可以顺着下方步骤一步一步点选填报哦~</div>
             </div>
 
             <div class="nlp-speed-box">
@@ -2466,7 +2464,7 @@
       }
 
       setTimeout(() => {
-        setDoubaoMessage('您好！我是智修云 AI 小助手，直接在下方输入框粘贴一句话即可极速解析报修~');
+        setDoubaoMessage('您好呀！报修超简单：您可以直接在下方输入框粘贴一句话，也可以顺着下方步骤一步一步点选哦~');
       }, 800);
     });
   </script>

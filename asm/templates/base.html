@@ -47,13 +47,10 @@
                         <a href="/tech" class="quantum-pill-link {% if request.path.startswith('/tech') %}active{% endif %}">⚡ 师傅工作台</a>
                         <a href="/query" class="quantum-pill-link {% if request.path.startswith('/query') %}active{% endif %}">🔍 工单查询</a>
                     {% elif current_user.role == 'dispatcher' %}
-                        <!-- 调度员全量管理看板 -->
+                        <!-- 调度中介核心看板 -->
                         <a href="/" class="quantum-pill-link {% if request.path == '/' %}active{% endif %}">调度看板</a>
-                        <a href="/customers" class="quantum-pill-link {% if request.path.startswith('/customers') %}active{% endif %}">客户设备</a>
-                        <a href="/parts" class="quantum-pill-link {% if request.path.startswith('/parts') or request.path.startswith('/fault-types') %}active{% endif %}">字典与价目</a>
-                        <a href="/reports" class="quantum-pill-link {% if request.path.startswith('/reports') %}active{% endif %}">管理报表</a>
-                        <a href="/seed" class="quantum-pill-link {% if request.path.startswith('/seed') %}active{% endif %}">演示数据</a>
-                        <a href="/query" class="quantum-pill-link {% if request.path.startswith('/query') %}active{% endif %}">客户查询</a>
+                        <a href="/customers" class="quantum-pill-link {% if request.path.startswith('/customers') %}active{% endif %}">客户档案</a>
+                        <a href="/query" class="quantum-pill-link {% if request.path.startswith('/query') %}active{% endif %}">工单检索</a>
                     {% endif %}
                 {% endif %}
             </div>
