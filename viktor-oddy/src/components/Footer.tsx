@@ -4,9 +4,9 @@ export default function Footer() {
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
         {/* 列1：品牌 */}
         <div>
-          <h2 className="font-serif text-2xl text-white mb-4">家修无忧</h2>
-          <p className="text-sm">专业家电维修服务</p>
-          <p className="text-sm mt-1">让生活更省心</p>
+          <h2 className="font-serif text-2xl text-white mb-4">智修云</h2>
+          <p className="text-sm">AI 赋能社区家电快修服务平台</p>
+          <p className="text-sm mt-1">邻里直联 · 透明省心</p>
         </div>
 
         {/* 列2：服务项目 */}

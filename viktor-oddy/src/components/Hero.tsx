@@ -12,10 +12,10 @@ export default function Hero() {
     <section ref={ref} className="flex flex-col items-center">
       <div className="max-w-[440px] px-6 pt-12 md:pt-16">
         <div style={anim(0.1).style} className={`font-serif text-[32px] md:text-[40px] lg:text-[44px] font-semibold text-[#051A24] tracking-tight mb-4 ${anim(0.1).className}`}>
-          家修无忧
+          智修云
         </div>
         <div style={anim(0.2).style} className={`font-mono text-xs md:text-sm text-[#051A24] mb-2 ${anim(0.2).className}`}>
-          AI极速撮合 · 邻里家电快修服务平台
+          AI 赋能社区家电快修 · 智能工单协同平台
         </div>
         <h1 style={anim(0.3).style} className={`text-[32px] md:text-[40px] lg:text-[44px] leading-[1.1] text-[#0D212C] tracking-tight whitespace-nowrap ${anim(0.3).className}`}>
           <div>让故障家电<span className="font-serif">一键焕新，</span></div>

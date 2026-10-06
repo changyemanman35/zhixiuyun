@@ -4867,7 +4867,8 @@ details[open] summary {
    适配家电维修官方服务大厅主界面，纯白极简与沉浸画卷并存
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap');
+/* 本地高定衬线字体族声明回退 (NFR-6 断网可用性支持) */
+/* Playfair Display / Georgia / 宋体 / serif */
 
 :root {
     --vo-brand: #051A24;

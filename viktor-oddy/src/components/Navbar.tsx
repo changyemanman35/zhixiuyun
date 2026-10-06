@@ -24,7 +24,7 @@ export default function Navbar() {
             修
           </div>
           <span className="font-serif text-xl font-semibold tracking-tight text-[#051A24]">
-            家修无忧
+            智修云
           </span>
           <span className="hidden sm:inline-block text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-[#F6FCFF] text-[#273C46] border border-[#E0EBF0]">
             服务大厅

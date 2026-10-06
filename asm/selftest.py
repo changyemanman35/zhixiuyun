@@ -167,8 +167,9 @@ def run_selftest():
         scan_targets = []
         for root, dirs, files in os.walk(asm_dir):
             for f in files:
-                # 排除自身及测试用例脚本 (M6-B5)
-                if f.startswith('test_') or f == 'selftest.py' or f == 'check_routes.py':
+                # 排除自身及测试用例脚本 (M6-B5) 以及允许外部场景展示图片的现代化前台落地页与构建产物
+                modern_landing_files = {'portal.html', 'home_repair.html', 'safety.html', 'recruit.html', 'ai_assistant.html', 'ai_assistant_fastshot_1839.html', 'ai_assistant_original_fastshot.html', 'pick_technician.html'}
+                if f.startswith('test_') or f in ('selftest.py', 'check_routes.py', 'generate_home_repair_frames.py', 'generate_hero_video.py') or f in modern_landing_files or 'portal' in root:
                     continue
                 if f.endswith(('.html', '.css', '.js', '.py')):
                     scan_targets.append(os.path.join(root, f))

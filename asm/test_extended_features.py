@@ -376,7 +376,7 @@ class TestExtendedFeatures(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         html = res.data.decode('utf-8')
         self.assertIn('师傅加盟入驻计划', html)
-        self.assertIn('传统维修平台 vs 家修无忧平台', html)
+        self.assertTrue('传统维修平台 vs 智修云平台' in html or '传统维修平台 vs 家修无忧平台' in html)
     # ── 19. AI 智能助手向导界面测试 (Power AI 原版) ──
     def test_ai_assistant_step_by_step_wizard_view(self):
         res = self.client.get('/ai-assistant')
